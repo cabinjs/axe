@@ -1,4 +1,4 @@
-# lad-logger
+# [**@ladjs/logger**](https://github.com/ladjs/logger)
 
 [![build status](https://img.shields.io/travis/ladjs/logger.svg)](https://travis-ci.org/ladjs/logger)
 [![code coverage](https://img.shields.io/codecov/c/github/ladjs/logger.svg)](https://codecov.io/gh/ladjs/logger)
@@ -7,7 +7,7 @@
 [![made with lass](https://img.shields.io/badge/made_with-lass-95CC28.svg)](https://github.com/lassjs/lass)
 [![license](https://img.shields.io/github/license/ladjs/logger.svg)](<>)
 
-> [Logger](https://github.com/ladjs/logger/issues)
+> Logger for Lad
 
 
 ## Table of Contents
