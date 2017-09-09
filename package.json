@@ -1,5 +1,6 @@
 {
   "name": "@ladjs/logger",
+  "private": false,
   "description": "Lad's logger",
   "version": "0.0.1",
   "author": "Alexis Tyler <xo@wvvw.me> (https://wvvw.me/)",
