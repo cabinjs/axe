@@ -39,9 +39,9 @@ yarn add @ladjs/logger
 ```js
 const Logger = require('@ladjs/logger');
 
-const log = new Logger();
+const logger = new Logger();
 
-console.log(log.info('hello world'));
+console.log(logger.info('hello world'));
 // info: hello world
 ```
 
