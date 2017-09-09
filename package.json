@@ -31,7 +31,25 @@
     "node": ">=8.x"
   },
   "homepage": "https://github.com/ladjs/logger",
-  "keywords": ["ladjs", "lad-logger", "logger", "lass"],
+  "keywords": [
+    "transport",
+    "api",
+    "wrapper",
+    "official",
+    "ladjs",
+    "lad-logger",
+    "logger",
+    "lass",
+    "winston",
+    "bunyan",
+    "log",
+    "raven",
+    "sentry",
+    "airbrake",
+    "cabin",
+    "bugsnag",
+    "timber"
+  ],
   "license": "MIT",
   "lint-staged": {
     "*.{js,jsx,mjs,ts,tsx,css,less,scss,json,graphql}": [
