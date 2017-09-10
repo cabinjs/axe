@@ -45,6 +45,18 @@ console.log(logger.info('hello world'));
 // info: hello world
 ```
 
+# Suppress logs
+
+This is useful when you want need logging turned on in certain circumstances.
+For example when you're running tests you can set `logger.config.silent = true`.
+```js
+const Logger = require('@ladjs/logger');
+
+const logger = new Logger({ silent: true });
+
+console.log(logger.info('hello world'));
+```
+
 
 ## Contributors
 
@@ -65,7 +77,7 @@ If you are seeking permission to use these trademarks, then please [contact us](
 [MIT](LICENSE) © [Alexis Tyler](https://wvvw.me/)
 
 
-## 
+##
 
 [npm]: https://www.npmjs.com/
 
