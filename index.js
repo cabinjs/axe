@@ -22,7 +22,7 @@ class Logger {
   constructor(config = {}) {
     // debugName gets passed to logger.debug
     this.config = Object.assign(
-      { appName: '@ladjs/logger', showStack: false },
+      { appName: '@ladjs/logger', showStack: false, silent: false },
       config
     );
 
@@ -50,6 +50,10 @@ class Logger {
 
   debug(message) {
     const { config } = this;
+
+    // Supress logs
+    if (config.silent) return;
+
     debug(config.appName, message);
   }
 
@@ -98,6 +102,9 @@ class Logger {
       sentry.captureMessage(message, meta);
     }
     */
+
+    // Supress logs
+    if (config.silent) return;
 
     console.log(`${chalk[levels[level]](level)}: ${message}`);
 
