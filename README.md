@@ -14,6 +14,7 @@
 
 * [Install](#install)
 * [Usage](#usage)
+* [Suppress logs](#suppress-logs)
 * [Contributors](#contributors)
 * [Trademark Notice](#trademark-notice)
 * [License](#license)
@@ -45,10 +46,12 @@ console.log(logger.info('hello world'));
 // info: hello world
 ```
 
-# Suppress logs
+
+## Suppress logs
 
 This is useful when you want need logging turned on in certain circumstances.
 For example when you're running tests you can set `logger.config.silent = true`.
+
 ```js
 const Logger = require('@ladjs/logger');
 
@@ -60,9 +63,10 @@ console.log(logger.info('hello world'));
 
 ## Contributors
 
-| Name             | Website            |
-| ---------------- | ------------------ |
-| **Alexis Tyler** | <https://wvvw.me/> |
+| Name             | Website                   |
+| ---------------- | ------------------------- |
+| **Nick Baugh**   | <http://niftylettuce.com> |
+| **Alexis Tyler** | <https://wvvw.me/>        |
 
 
 ## Trademark Notice
@@ -74,10 +78,10 @@ If you are seeking permission to use these trademarks, then please [contact us](
 
 ## License
 
-[MIT](LICENSE) © [Alexis Tyler](https://wvvw.me/)
+[MIT](LICENSE) © [Nick Baugh](http://niftylettuce.com)
 
 
-##
+## 
 
 [npm]: https://www.npmjs.com/
 

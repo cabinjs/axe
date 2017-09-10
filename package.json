@@ -1,13 +1,13 @@
 {
   "name": "@ladjs/logger",
-  "private": false,
   "description": "Logger for Lad",
   "version": "0.0.1",
-  "author": "Alexis Tyler <xo@wvvw.me> (https://wvvw.me/)",
+  "author": "Nick Baugh <niftylettuce@gmail.com> (http://niftylettuce.com)",
   "bugs": {
     "url": "https://github.com/ladjs/logger/issues"
   },
   "contributors": [
+    "Nick Baugh <niftylettuce@gmail.com> (http://niftylettuce.com)",
     "Alexis Tyler <xo@wvvw.me> (https://wvvw.me/)"
   ],
   "dependencies": {
@@ -60,10 +60,7 @@
       "prettier --write --single-quote --trailing-comma none",
       "git add"
     ],
-    "*.md": [
-      "remark . -qfo",
-      "git add"
-    ]
+    "*.md": ["remark . -qfo", "git add"]
   },
   "main": "index.js",
   "nyc": {
@@ -71,16 +68,10 @@
     "lines": 70,
     "functions": 70,
     "branches": 70,
-    "reporter": [
-      "lcov",
-      "html",
-      "text"
-    ]
+    "reporter": ["lcov", "html", "text"]
   },
   "remarkConfig": {
-    "plugins": [
-      "preset-github"
-    ]
+    "plugins": ["preset-github"]
   },
   "repository": {
     "type": "git",
@@ -95,9 +86,7 @@
   },
   "xo": {
     "extends": "prettier",
-    "plugins": [
-      "prettier"
-    ],
+    "plugins": ["prettier"],
     "parserOptions": {
       "sourceType": "script"
     },

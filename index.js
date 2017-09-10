@@ -109,8 +109,9 @@ class Logger {
     console.log(`${chalk[levels[level]](level)}: ${message}`);
 
     if (!config.showStack) return;
-    if (!_.isEmpty(meta.extra)) console.log(meta.extra);
-    if (!_.isEmpty(meta.user)) console.log(meta.user);
+    if (meta.err && meta.err.stack) console.log(meta.err.stack);
+    // if (!_.isEmpty(meta.extra)) console.log(meta.extra);
+    // if (!_.isEmpty(meta.user)) console.log(meta.user);
   }
 }
 
