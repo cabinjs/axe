@@ -26,14 +26,6 @@ class Logger {
       config
     );
 
-    // TODO: rewrite this with better log parsing by cabin
-    this.contextError = err => {
-      // , ctx) {
-      console.log(err && err.stack);
-      // TODO: add user object and request to meta here
-      this.error(err);
-    };
-
     // bind helper functions for each log level
     _.each(_.keys(levels), level => {
       // don't add debug since we add this ourselves
@@ -48,13 +40,26 @@ class Logger {
     this.warn = this.warning;
   }
 
+  // TODO: rewrite this with better log parsing by cabin
+  contextError(err) {
+    // , ctx) {
+    console.log(err && err.stack);
+    // TODO: add user object and request to meta here
+    this.error(err);
+  }
+
   debug(message) {
     const { config } = this;
 
     // Supress logs
     if (config.silent) return;
 
-    debug(config.appName, message);
+    const name =
+      require.main && require.main.filename
+        ? require.main.filename
+        : config.appName;
+
+    debug(name)(message);
   }
 
   log(level, message, meta = {}) {
