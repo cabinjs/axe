@@ -1,3 +1,4 @@
+const debug = require('debug');
 const _ = require('lodash');
 const s = require('underscore.string');
 const chalk = require('chalk');
@@ -19,7 +20,11 @@ const levels = {
 
 class Logger {
   constructor(config = {}) {
-    this.config = Object.assign({ showStack: false }, config);
+    // debugName gets passed to logger.debug
+    this.config = Object.assign(
+      { appName: '@ladjs/logger', showStack: false },
+      config
+    );
 
     // TODO: rewrite this with better log parsing by cabin
     this.contextError = err => {
@@ -31,6 +36,8 @@ class Logger {
 
     // bind helper functions for each log level
     _.each(_.keys(levels), level => {
+      // don't add debug since we add this ourselves
+      if (level === 'debug') return;
       this[level] = (message, extra) => {
         this.log(level, message, extra);
       };
@@ -39,6 +46,11 @@ class Logger {
     // aliases
     this.err = this.error;
     this.warn = this.warning;
+  }
+
+  debug(message) {
+    const { config } = this;
+    debug(config.appName, message);
   }
 
   log(level, message, meta = {}) {

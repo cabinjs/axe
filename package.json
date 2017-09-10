@@ -7,9 +7,12 @@
   "bugs": {
     "url": "https://github.com/ladjs/logger/issues"
   },
-  "contributors": ["Alexis Tyler <xo@wvvw.me> (https://wvvw.me/)"],
+  "contributors": [
+    "Alexis Tyler <xo@wvvw.me> (https://wvvw.me/)"
+  ],
   "dependencies": {
     "chalk": "^2.1.0",
+    "debug": "^3.0.1",
     "lodash": "^4.17.4",
     "underscore.string": "^3.3.4"
   },
@@ -57,7 +60,10 @@
       "prettier --write --single-quote --trailing-comma none",
       "git add"
     ],
-    "*.md": ["remark . -qfo", "git add"]
+    "*.md": [
+      "remark . -qfo",
+      "git add"
+    ]
   },
   "main": "index.js",
   "nyc": {
@@ -65,10 +71,16 @@
     "lines": 70,
     "functions": 70,
     "branches": 70,
-    "reporter": ["lcov", "html", "text"]
+    "reporter": [
+      "lcov",
+      "html",
+      "text"
+    ]
   },
   "remarkConfig": {
-    "plugins": ["preset-github"]
+    "plugins": [
+      "preset-github"
+    ]
   },
   "repository": {
     "type": "git",
@@ -83,7 +95,9 @@
   },
   "xo": {
     "extends": "prettier",
-    "plugins": ["prettier"],
+    "plugins": [
+      "prettier"
+    ],
     "parserOptions": {
       "sourceType": "script"
     },
