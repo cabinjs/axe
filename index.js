@@ -43,8 +43,7 @@ class Logger {
   // TODO: rewrite this with better log parsing by cabin
   contextError(err) {
     // , ctx) {
-    console.log(err && err.stack);
-    // TODO: add user object and request to meta here
+    // TODO: add user object and request to meta here using `ctx` arg
     this.error(err);
   }
 
