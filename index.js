@@ -1,3 +1,4 @@
+const autoBind = require('auto-bind');
 const debug = require('debug');
 const _ = require('lodash');
 const s = require('underscore.string');
@@ -20,6 +21,8 @@ const levels = {
 
 class Logger {
   constructor(config = {}) {
+    autoBind(this);
+
     // debugName gets passed to logger.debug
     this.config = Object.assign(
       { appName: '@ladjs/logger', showStack: false, silent: false },
