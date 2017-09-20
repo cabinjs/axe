@@ -19,15 +19,48 @@ const levels = {
   fatal: 'bgRed'
 };
 
+const allowedColors = [
+  'bgBlack',
+  'bgRed',
+  'bgGreen',
+  'bgYellow',
+  'bgBlue',
+  'bgMagenta',
+  'bgCyan',
+  'bgWhite',
+  'bgBlackBright',
+  'bgRedBright',
+  'bgGreenBright',
+  'bgYellowBright',
+  'bgBlueBright',
+  'bgMagentaBright',
+  'bgCyanBright',
+  'bgWhiteBright'
+];
+
 class Logger {
   constructor(config = {}) {
     autoBind(this);
 
     // debugName gets passed to logger.debug
     this.config = Object.assign(
-      { appName: '@ladjs/logger', showStack: false, silent: false },
+      {
+        appName: '@ladjs/logger',
+        showStack: false,
+        silent: false,
+        processName: null,
+        processColor: null
+      },
       config
     );
+
+    this.config.processColor =
+      allowedColors.includes(this.config.processColor) ||
+      allowedColors[Math.floor(Math.random() * allowedColors.length)];
+
+    this.config.processColor =
+      this.config.processColor[0].toUpperCase() +
+      this.config.processColor.slice(1);
 
     // bind helper functions for each log level
     _.each(_.keys(levels), level => {
@@ -113,7 +146,13 @@ class Logger {
     // Supress logs
     if (config.silent) return;
 
-    console.log(`${chalk[levels[level]](level)}: ${message}`);
+    let prepend = '';
+    if (config.processName) {
+      const color = chalk[config.processColor].bold;
+      prepend = `${color(`[${config.processName.toUpperCase()}]`)} `;
+    }
+
+    console.log(`${prepend}${chalk[levels[level]](level)}: ${message}`);
 
     if (!config.showStack) return;
     if (meta.err && meta.err.stack) console.log(meta.err.stack);

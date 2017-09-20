@@ -42,7 +42,7 @@ const Logger = require('@ladjs/logger');
 
 const logger = new Logger();
 
-console.log(logger.info('hello world'));
+logger.info('hello world');
 // info: hello world
 ```
 
@@ -57,7 +57,19 @@ const Logger = require('@ladjs/logger');
 
 const logger = new Logger({ silent: true });
 
-console.log(logger.info('hello world'));
+logger.info('hello world');
+```
+
+## Process name
+In case you need to run multiple node processes together we recommend passing a processName to the logger.
+
+```js
+const Logger = require('@ladjs/logger');
+
+const logger = new Logger({ processName: 'web' });
+
+logger.info('hello world');
+// [WEB] info: hello world
 ```
 
 
@@ -81,7 +93,7 @@ If you are seeking permission to use these trademarks, then please [contact us](
 [MIT](LICENSE) © [Nick Baugh](http://niftylettuce.com)
 
 
-## 
+##
 
 [npm]: https://www.npmjs.com/
 
