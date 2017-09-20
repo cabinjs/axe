@@ -15,6 +15,7 @@
 * [Install](#install)
 * [Usage](#usage)
 * [Suppress logs](#suppress-logs)
+* [Process name](#process-name)
 * [Contributors](#contributors)
 * [Trademark Notice](#trademark-notice)
 * [License](#license)
@@ -60,7 +61,9 @@ const logger = new Logger({ silent: true });
 logger.info('hello world');
 ```
 
+
 ## Process name
+
 In case you need to run multiple node processes together we recommend passing a processName to the logger.
 
 ```js
@@ -93,7 +96,7 @@ If you are seeking permission to use these trademarks, then please [contact us](
 [MIT](LICENSE) © [Nick Baugh](http://niftylettuce.com)
 
 
-##
+## 
 
 [npm]: https://www.npmjs.com/
 
