@@ -72,7 +72,7 @@ const Logger = require('@ladjs/logger');
 const logger = new Logger({ processName: 'web' });
 
 logger.info('hello world');
-// [WEB] info: hello world
+// [web] info: hello world
 ```
 
 

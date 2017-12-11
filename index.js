@@ -1,16 +1,14 @@
+const { format } = require('util');
 const autoBind = require('auto-bind');
 const debug = require('debug');
 const _ = require('lodash');
-const s = require('underscore.string');
 const chalk = require('chalk');
 
-// TODO: incorporate cabin log levels
-//
-// * `debug` (the least serious)
-// * `info`
-// * `warning`
-// * `error`
-// * `fatal` (the most serious)
+// `debug` (the least serious)
+// `info`
+// `warning` (also aliased as `warn`)
+// `error` (also aliased as `err`)
+// `fatal` (the most serious)
 const levels = {
   debug: 'cyan',
   info: 'green',
@@ -38,6 +36,14 @@ const allowedColors = [
   'bgWhiteBright'
 ];
 
+// these are known as "placeholder tokens", see this link for more info:
+// <https://nodejs.org/api/util.html#util_util_format_format_args>
+//
+// since they aren't exposed (or don't seem to be) by node (at least not yet)
+// we just define an array that contains them for now
+// <https://github.com/nodejs/node/issues/17601>
+const tokens = ['%s', '%d', '%i', '%f', '%j', '%o', '%O', '%%'];
+
 class Logger {
   constructor(config = {}) {
     autoBind(this);
@@ -49,25 +55,26 @@ class Logger {
         showStack: false,
         silent: false,
         processName: null,
-        processColor: null
+        processColor: 'bgCyan'
       },
       config
     );
 
-    this.config.processColor =
-      allowedColors.includes(this.config.processColor) ||
-      allowedColors[Math.floor(Math.random() * allowedColors.length)];
-
-    this.config.processColor =
-      this.config.processColor[0].toUpperCase() +
-      this.config.processColor.slice(1);
+    if (
+      this.config.processColor &&
+      !allowedColors.includes(this.config.processColor)
+    )
+      throw new Error(
+        `Invalid color ${
+          this.config.processColor
+        }, must be one of ${allowedColors.join(', ')}`
+      );
 
     // bind helper functions for each log level
-    _.each(_.keys(levels), level => {
-      // don't add debug since we add this ourselves
-      if (level === 'debug') return;
-      this[level] = (message, extra) => {
-        this.log(level, message, extra);
+    const log = this.log;
+    _.keys(levels).forEach(level => {
+      this[level] = function() {
+        log(...[level].concat([].slice.call(arguments)));
       };
     });
 
@@ -83,20 +90,6 @@ class Logger {
     this.error(err);
   }
 
-  debug(message) {
-    const { config } = this;
-
-    // Supress logs
-    if (config.silent) return;
-
-    const name =
-      require.main && require.main.filename
-        ? require.main.filename
-        : config.appName;
-
-    debug(name)(message);
-  }
-
   log(level, message, meta = {}) {
     const { config } = this;
 
@@ -109,58 +102,80 @@ class Logger {
       );
     }
 
-    // TODO: we should check if this is using log.level() or log()
-    //       as it may or may not be called "meta"
-    if (!_.isObject(meta)) {
-      throw new TypeError(`\`meta\` must be an object not a ${typeof meta}`);
+    // if there are four or more args
+    // then infer to use util.format on everything
+    if (arguments.length >= 4) {
+      message = format(...[].slice.call(arguments).slice(1));
+      meta = {};
+    } else if (
+      arguments.length === 3 &&
+      _.isString(message) &&
+      tokens.some(t => message.includes(t))
+    ) {
+      // otherwise if there are three args and if the `message` contains
+      // a placeholder token (e.g. '%s' or '%d' - see above `tokens` variable)
+      // then we can infer that the `meta` arg passed is used for formatting
+      message = format(message, meta);
+      meta = {};
+    } else if (
+      !_.isPlainObject(meta) &&
+      !_.isUndefined(meta) &&
+      !_.isNull(meta)
+    ) {
+      // if the `meta` variable passed was not an Object then convert it
+      message = format(message, meta);
+      meta = {};
+    } else if (!_.isString(message)) {
+      // if the message is not a string then we should run `util.format` on it
+      // assuming we're formatting it like it was another argument
+      // (as opposed to using something like fast-json-stringify)
+      message = format(message);
     }
 
-    // TODO: put in cabin here
-    // use kwargs parsing from sentry to get user and request info
-    // TODO: handle sentry/bugsnag normalization here
+    if (!_.isPlainObject(meta)) meta = {};
 
     if (_.isError(message)) {
-      if (!_.isObject(meta.err)) {
+      if (!_.isObject(meta.err))
         meta.err = { stack: message.stack, message: message.message };
-      }
       message = message.message;
     }
 
     // set default level on meta
     meta.level = level;
 
-    if (!_.isString(message) || s.isBlank(message)) {
-      throw new Error('`message` must be a string and not empty');
-    }
+    // TODO: send to cabin here
+    // if (config.env === 'production') cabin.log(message, meta);
 
-    /*
-    // TODO: send to cabin / sentry / bugsnag here
-    if (config.env === 'production') {
-      if (level === 'error' || level === 'fatal')
-        return sentry.captureException(message, meta);
-
-      sentry.captureMessage(message, meta);
-    }
-    */
-
-    // Supress logs
+    // Suppress logs if it was silent
     if (config.silent) return;
 
-    let prepend = '';
-    if (config.processName) {
-      const color = chalk[config.processColor].bold;
-      prepend = `${color(`[${config.processName.toUpperCase()}]`)} `;
+    if (level === 'debug') {
+      let name = config.processName;
+      if (!name && require.main && require.main.filename)
+        name = require.main.filename;
+      if (!name) name = '@ladjs/logger';
+      debug(name)(message, _.omit(meta, 'level'));
+    } else {
+      let prepend = '';
+      if (config.processName) {
+        const color = chalk[config.processColor].bold;
+        prepend = `${color(`[${config.processName}]`)} `;
+      }
+      console.log(`${prepend}${chalk[levels[level]](level)}: ${message}`);
+
+      // if there was meta information then output it
+      if (!_.isEmpty(_.omit(meta, ['level', 'err'])))
+        console.log(_.omit(meta, ['level', 'err']));
+
+      // if we're not showing the stack trace then return early
+      if (!config.showStack) return;
+
+      // output the stack trace to the console for debugging
+      if (meta.err && meta.err.stack) console.log(meta.err.stack);
     }
-
-    console.log(`${prepend}${chalk[levels[level]](level)}: ${message}`);
-
-    if (!config.showStack) return;
-    if (meta.err && meta.err.stack) console.log(meta.err.stack);
-    // if (!_.isEmpty(meta.extra)) console.log(meta.extra);
-    // if (!_.isEmpty(meta.user)) console.log(meta.user);
   }
 }
 
-Logger.levels = Object.keys(levels);
+Logger.levels = _.keys(levels);
 
 module.exports = Logger;
