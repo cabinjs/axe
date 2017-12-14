@@ -51,6 +51,7 @@ class Logger {
     // debugName gets passed to logger.debug
     this.config = Object.assign(
       {
+        timestamp: true,
         appName: '@ladjs/logger',
         showStack: false,
         silent: false,
@@ -161,7 +162,10 @@ class Logger {
         const color = chalk[config.processColor].bold;
         prepend = `${color(`[${config.processName}]`)} `;
       }
-      console.log(`${prepend}${chalk[levels[level]](level)}: ${message}`);
+      const output = `${prepend}${chalk[levels[level]](level)}: ${message}`;
+      console.log(
+        `${config.timestamp ? new Date().toISOString() : ''} ${output}`
+      );
 
       // if there was meta information then output it
       if (!_.isEmpty(_.omit(meta, ['level', 'err'])))

@@ -14,6 +14,7 @@
 
 * [Install](#install)
 * [Usage](#usage)
+* [Hide timestamps from console output](#hide-timestamps-from-console-output)
 * [Suppress logs](#suppress-logs)
 * [Process name](#process-name)
 * [Contributors](#contributors)
@@ -45,6 +46,15 @@ const logger = new Logger();
 
 logger.info('hello world');
 // info: hello world
+```
+
+
+## Hide timestamps from console output
+
+```js
+const Logger = require('@ladjs/logger');
+
+const logger = new Logger({ timestamp: false });
 ```
 
 

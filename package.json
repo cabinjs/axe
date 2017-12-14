@@ -101,6 +101,7 @@
           "ignoreUrls": true
         }
       ],
+      "complexity": ["error", 21],
       "capitalized-comments": "off",
       "camelcase": "off",
       "no-warning-comments": "off"
