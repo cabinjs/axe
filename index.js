@@ -93,23 +93,25 @@ class Logger {
 
   log(level, message, meta = {}) {
     const { config } = this;
+    let modifier = 0;
 
     if (level === 'warn') level = 'warning';
     if (level === 'err') level = 'error';
 
     if (!_.isString(level) || !_.includes(_.keys(levels), level)) {
-      throw new Error(
-        `\`level\` must be a string and one of ${_.keys(levels).join(', ')}`
-      );
+      meta = message;
+      message = level;
+      level = 'info';
+      modifier = -1;
     }
 
     // if there are four or more args
     // then infer to use util.format on everything
-    if (arguments.length >= 4) {
-      message = format(...[].slice.call(arguments).slice(1));
+    if (arguments.length >= 4 + modifier) {
+      message = format(...[].slice.call(arguments).slice(1 + modifier));
       meta = {};
     } else if (
-      arguments.length === 3 &&
+      arguments.length === 3 + modifier &&
       _.isString(message) &&
       tokens.some(t => message.includes(t))
     ) {

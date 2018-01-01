@@ -90,3 +90,28 @@ Logger.levels.forEach(level => {
     else t.true(t.context.spy.calledWithMatch('false'));
   });
 });
+
+test('log can be used like console.log(message)', t => {
+  t.context.logger.log('hello world');
+  t.true(t.context.spy.calledWithMatch('hello world'));
+});
+
+test('log can be used like console.log(message, meta)', t => {
+  const message = 'hello world';
+  t.context.logger.log(message, { user: { username: 'test' } });
+  t.true(t.context.spy.calledWithMatch(message));
+  t.true(t.context.spy.calledWith({ user: { username: 'test' } }));
+});
+
+test('log can be used with util.format', t => {
+  const args = ['arg1', 'arg2', 'arg3', 'arg4', 'arg5'];
+  t.context.logger.log(...args);
+  t.true(t.context.spy.calledWithMatch(format(...args)));
+});
+
+test('log can be used with placeholder tokens', t => {
+  const args = ['arg1 %s hello world', 'arg2'];
+  const message = format(...args);
+  t.context.logger.log(...args);
+  t.true(t.context.spy.calledWithMatch(message));
+});
