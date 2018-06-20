@@ -1,40 +1,8 @@
 const { format } = require('util');
-const autoBind = require('auto-bind');
 const debug = require('debug');
 const _ = require('lodash');
-const chalk = require('chalk');
-
-// `debug` (the least serious)
-// `info`
-// `warning` (also aliased as `warn`)
-// `error` (also aliased as `err`)
-// `fatal` (the most serious)
-const levels = {
-  debug: 'cyan',
-  info: 'green',
-  warning: 'yellow',
-  error: 'red',
-  fatal: 'bgRed'
-};
-
-const allowedColors = [
-  'bgBlack',
-  'bgRed',
-  'bgGreen',
-  'bgYellow',
-  'bgBlue',
-  'bgMagenta',
-  'bgCyan',
-  'bgWhite',
-  'bgBlackBright',
-  'bgRedBright',
-  'bgGreenBright',
-  'bgYellowBright',
-  'bgBlueBright',
-  'bgMagentaBright',
-  'bgCyanBright',
-  'bgWhiteBright'
-];
+const { isBrowser, isNode } = require('browser-or-node');
+const { Signale } = require('signale');
 
 // these are known as "placeholder tokens", see this link for more info:
 // <https://nodejs.org/api/util.html#util_util_format_format_args>
@@ -44,38 +12,38 @@ const allowedColors = [
 // <https://github.com/nodejs/node/issues/17601>
 const tokens = ['%s', '%d', '%i', '%f', '%j', '%o', '%O', '%%'];
 
-class Logger {
+class Axe {
   constructor(config = {}) {
-    autoBind(this);
-
     // debugName gets passed to logger.debug
     this.config = Object.assign(
       {
-        timestamp: true,
-        appName: '@ladjs/logger',
-        showStack: false,
+        timestamp: 'toLocaleString', // or toISO
+        locale: 'en',
+        showStack: true,
         silent: false,
+        appName: 'axe',
         processName: null,
-        processColor: 'bgCyan'
+        levels: ['debug', 'info', 'warning', 'error', 'fatal'],
+        signale: {}
       },
       config
     );
 
-    if (
-      this.config.processColor &&
-      !allowedColors.includes(this.config.processColor)
-    )
-      throw new Error(
-        `Invalid color ${
-          this.config.processColor
-        }, must be one of ${allowedColors.join(', ')}`
-      );
+    // bind nice a logger that we'll use based on
+    // the environment instead of VanillaJS `console`
+    this.signale = new Signale(this.config.signale);
+
+    // signale allows a scope [prefix] name
+    if (isNode && this.config.processName)
+      this.signale.scope(this.config.processName);
+
+    // we could have used `auto-bind` but it's not compiled for browser
+    this.log = this.log.bind(this);
 
     // bind helper functions for each log level
-    const log = this.log;
-    _.keys(levels).forEach(level => {
-      this[level] = function() {
-        log(...[level].concat([].slice.call(arguments)));
+    Axe.levels.forEach(level => {
+      this[level] = (...args) => {
+        this.log(...[level].concat([].slice.call(args)));
       };
     });
 
@@ -84,21 +52,15 @@ class Logger {
     this.warn = this.warning;
   }
 
-  // TODO: rewrite this with better log parsing by cabin
-  contextError(err) {
-    // , ctx) {
-    // TODO: add user object and request to meta here using `ctx` arg
-    this.error(err);
-  }
-
-  log(level, message, meta = {}) {
+  // eslint-disable-next-line complexity
+  log(level, message, meta = {}, ...args) {
     const { config } = this;
     let modifier = 0;
 
     if (level === 'warn') level = 'warning';
     if (level === 'err') level = 'error';
 
-    if (!_.isString(level) || !_.includes(_.keys(levels), level)) {
+    if (!_.isString(level) || !_.includes(config.levels, level)) {
       meta = message;
       message = level;
       level = 'info';
@@ -108,7 +70,11 @@ class Logger {
     // if there are four or more args
     // then infer to use util.format on everything
     if (arguments.length >= 4 + modifier) {
-      message = format(...[].slice.call(arguments).slice(1 + modifier));
+      message = format(
+        ...[]
+          .concat([level, message, meta].slice.call(args))
+          .slice(1 + modifier)
+      );
       meta = {};
     } else if (
       arguments.length === 3 + modifier &&
@@ -137,17 +103,18 @@ class Logger {
 
     if (!_.isPlainObject(meta)) meta = {};
 
+    let err;
     if (_.isError(message)) {
+      err = message;
       if (!_.isObject(meta.err))
         meta.err = { stack: message.stack, message: message.message };
-      message = message.message;
+      ({ message } = message);
     }
 
     // set default level on meta
     meta.level = level;
 
-    // TODO: send to cabin here
-    // if (config.env === 'production') cabin.log(message, meta);
+    // TODO: send to cabin here (message, meta)
 
     // Suppress logs if it was silent
     if (config.silent) return;
@@ -156,32 +123,24 @@ class Logger {
       let name = config.processName;
       if (!name && require.main && require.main.filename)
         name = require.main.filename;
-      if (!name) name = '@ladjs/logger';
+      if (!name) name = config.appName;
       debug(name)(message, _.omit(meta, 'level'));
     } else {
-      let prepend = '';
-      if (config.processName) {
-        const color = chalk[config.processColor].bold;
-        prepend = `${color(`[${config.processName}]`)} `;
-      }
-      const output = `${prepend}${chalk[levels[level]](level)}: ${message}`;
-      console.log(
-        `${config.timestamp ? new Date().toISOString() : ''} ${output}`
-      );
+      if (isBrowser && config.processName)
+        message = `[${config.processName}] ${message}`;
 
       // if there was meta information then output it
-      if (!_.isEmpty(_.omit(meta, ['level', 'err'])))
-        console.log(_.omit(meta, ['level', 'err']));
+      const omitted = _.omit(meta, ['level', 'err']);
+      if (_.isEmpty(omitted)) this.signale[level](message);
+      else this.signale[level](message, omitted);
 
       // if we're not showing the stack trace then return early
       if (!config.showStack) return;
 
       // output the stack trace to the console for debugging
-      if (meta.err && meta.err.stack) console.log(meta.err.stack);
+      if (err) this.signale.error(err);
     }
   }
 }
 
-Logger.levels = _.keys(levels);
-
-module.exports = Logger;
+module.exports = Axe;

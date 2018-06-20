@@ -1,11 +1,11 @@
 const sinon = require('sinon');
 
-const Logger = require('../../');
+const Axe = require('../../lib');
 
 function beforeEach(t) {
-  const logger = new Logger({ processName: 'ava-tests' });
+  const axe = new Axe({ processName: 'ava-tests' });
   Object.assign(t.context, {
-    logger,
+    axe,
     spy: sinon.spy(console, 'log'),
     stderr: sinon.spy(process.stderr, 'write')
   });

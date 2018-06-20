@@ -1,43 +1,64 @@
 {
-  "name": "@ladjs/logger",
-  "description": "Logger for Lad",
+  "name": "axe",
+  "description": "Logging utility for Node and Browser environments. Chop up your logs!",
   "version": "0.1.0",
   "author": "Nick Baugh <niftylettuce@gmail.com> (http://niftylettuce.com)",
   "bugs": {
-    "url": "https://github.com/ladjs/logger/issues"
+    "url": "https://github.com/cabinjs/axe/issues"
   },
   "contributors": [
     "Nick Baugh <niftylettuce@gmail.com> (http://niftylettuce.com)",
     "Alexis Tyler <xo@wvvw.me> (https://wvvw.me/)"
   ],
   "dependencies": {
-    "auto-bind": "^1.1.0",
-    "chalk": "^2.3.0",
+    "browser-or-node": "^1.0.2",
     "debug": "^3.1.0",
-    "is-plain-obj": "^1.1.0",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.10",
+    "luxon": "^1.3.0",
+    "signale": "^1.2.1"
   },
   "devDependencies": {
-    "ava": "^0.24.0",
-    "codecov": "^3.0.0",
-    "cross-env": "^5.1.3",
-    "eslint": "^4.14.0",
+    "@babel/cli": "^7.0.0-beta.51",
+    "@babel/core": "^7.0.0-beta.51",
+    "@babel/preset-env": "^7.0.0-beta.51",
+    "@babel/preset-es2015": "^7.0.0-beta.51",
+    "ava": "^1.0.0-beta.6",
+    "babelify": "^9.0.0",
+    "browserify": "^16.2.2",
+    "caniuse-lite": "^1.0.30000856",
+    "codecov": "^3.0.2",
+    "cross-env": "^5.2.0",
+    "eslint": "^4.19.1",
     "eslint-config-prettier": "^2.9.0",
-    "eslint-plugin-prettier": "^2.4.0",
+    "eslint-plugin-compat": "^2.4.0",
+    "eslint-plugin-prettier": "^2.6.0",
+    "express": "^4.16.3",
     "husky": "^0.14.3",
-    "lint-staged": "^6.0.0",
-    "nyc": "^11.4.1",
-    "prettier": "^1.9.2",
-    "remark-cli": "^4.0.0",
-    "remark-preset-github": "^0.0.7",
-    "sinon": "^4.1.3",
-    "xo": "^0.19.0"
+    "jsdom": "^11.11.0",
+    "koa": "^2.5.1",
+    "lint-staged": "^7.2.0",
+    "nyc": "^12.0.2",
+    "prettier": "^1.13.5",
+    "remark-cli": "^5.0.0",
+    "remark-preset-github": "^0.0.8",
+    "rimraf": "^2.6.2",
+    "rollup": "^0.61.0",
+    "sinon": "^6.0.0",
+    "tinyify": "^2.4.3",
+    "uglify-js": "^3.4.0",
+    "xo": "^0.21.1"
   },
   "engines": {
-    "node": ">=8.x"
+    "node": ">=6.4"
   },
-  "homepage": "https://github.com/ladjs/logger",
+  "homepage": "https://github.com/cabinjs/axe",
   "keywords": [
+    "console",
+    "signale",
+    "hackable",
+    "color",
+    "colored",
+    "chalk",
     "transport",
     "api",
     "wrapper",
@@ -54,7 +75,9 @@
     "airbrake",
     "cabin",
     "bugsnag",
-    "timber"
+    "timber",
+    "cabinjs",
+    "axe"
   ],
   "license": "MIT",
   "lint-staged": {
@@ -62,29 +85,57 @@
       "prettier --write --single-quote --trailing-comma none",
       "git add"
     ],
-    "*.md": ["remark . -qfo", "git add"]
+    "*.md": [
+      "remark . -qfo",
+      "git add"
+    ]
   },
-  "main": "index.js",
+  "main": "lib/index.js",
+  "browser": "dist/axe.js",
+  "unpkg": "dist/axe.min.js",
+  "files": [
+    "lib",
+    "dist"
+  ],
   "remarkConfig": {
-    "plugins": ["preset-github"]
+    "plugins": [
+      "preset-github"
+    ]
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ladjs/logger"
+    "url": "https://github.com/cabinjs/axe"
+  },
+  "ava": {
+    "serial": true
   },
   "scripts": {
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "lint": "xo && remark . -qfo",
+    "lint": "xo && remark . -qfo && eslint lib,dist",
     "precommit": "lint-staged && npm test",
-    "test": "npm run lint && npm run test-coverage",
-    "test-coverage": "cross-env DEBUG=ava-tests NODE_ENV=test nyc ava"
+    "test": "npm run build && npm run lint && npm run ava",
+    "test-coverage": "npm run build && npm run lint && npm run nyc",
+    "ava": "cross-env NODE_ENV=test ava",
+    "nyc": "cross-env NODE_ENV=test nyc ava",
+    "build": "npm run build:clean && npm run build:lib && npm run build:dist",
+    "build:clean": "rimraf lib dist",
+    "build:lib": "babel src --out-dir lib",
+    "build:dist": "npm run browserify && npm run minify",
+    "browserify": "browserify src/index.js -o dist/axe.js -s Axe -d -t babelify",
+    "minify": "browserify src/index.js -s Axe -d -t babelify -p tinyify | uglifyjs --source-map content=inline,includeSources,url=inline -cm -o dist/axe.min.js"
   },
   "xo": {
     "extends": "prettier",
-    "plugins": ["prettier"],
+    "plugins": [
+      "prettier"
+    ],
     "parserOptions": {
       "sourceType": "script"
     },
+    "env": [
+      "node",
+      "browser"
+    ],
     "rules": {
       "prettier/prettier": [
         "error",
@@ -101,11 +152,34 @@
           "ignoreUrls": true
         }
       ],
-      "complexity": ["error", 21],
       "capitalized-comments": "off",
       "camelcase": "off",
       "no-warning-comments": "off"
     },
-    "space": true
+    "space": true,
+    "ignore": [
+      "config.js"
+    ],
+    "overrides": [
+      {
+        "plugins": [
+          "prettier",
+          "compat"
+        ],
+        "parserOptions": {
+          "sourceType": "script"
+        },
+        "files": [
+          "lib/**/*.js"
+        ],
+        "envs": [
+          "browser",
+          "node"
+        ],
+        "rules": {
+          "compat/compat": "error"
+        }
+      }
+    ]
   }
 }

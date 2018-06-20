@@ -1,37 +1,40 @@
 const { format } = require('util');
 const test = require('ava');
 
-const Logger = require('../');
+const Axe = require('../lib');
 const { beforeEach, afterEach } = require('./helpers');
 
 test.beforeEach(beforeEach);
 test.afterEach.always(afterEach);
 
 test('returns itself', t => {
-  t.true(t.context.logger instanceof Logger);
+  t.true(t.context.axe instanceof Axe);
 });
 
 test('sets a config object', t => {
-  t.true(t.context.logger instanceof Logger);
+  t.true(t.context.axe instanceof Axe);
 });
 
 test(`returns array of levels`, t => {
-  t.deepEqual(Logger.levels, ['debug', 'info', 'warning', 'error', 'fatal']);
+  t.deepEqual(Axe.levels, ['debug', 'info', 'warning', 'error', 'fatal']);
 });
 
-Logger.levels.forEach(level => {
+Axe.levels.forEach(level => {
   test(`level ${level} works`, t => {
     const message = `test ${level} message`;
-    t.context.logger[level](message);
+    t.context.axe[level](message);
+    console.log('getCalls', t.context.stderr.getCalls());
     if (level === 'debug') t.true(t.context.stderr.calledWithMatch(message));
     else t.true(t.context.spy.calledWithMatch(message));
   });
 });
 
-Logger.levels.forEach(level => {
+Axe.levels.forEach(level => {
   test(`level ${level} works with meta`, t => {
     const message = `${level} works with meta`;
-    t.context.logger[level](message, { user: { username: 'test' } });
+    t.context.axe[level](message, { user: { username: 'test' } });
+    console.log('spy getCalls', t.context.spy.getCalls());
+    console.log('stderr getCalls', t.context.stderr.getCalls());
     if (level === 'debug') {
       t.true(t.context.stderr.calledWithMatch(message));
     } else {
@@ -41,11 +44,13 @@ Logger.levels.forEach(level => {
   });
 });
 
-Logger.levels.forEach(level => {
+Axe.levels.forEach(level => {
   test(`level ${level} works with Error as first argument`, t => {
-    const logger = new Logger({ showStack: true, processName: 'ava-tests' });
+    const axe = new Axe({ showStack: true, processName: 'ava-tests' });
     const err = new Error(`test ${level} error`);
-    logger[level](err);
+    axe[level](err);
+    console.log('spy getCalls', t.context.spy.getCalls());
+    console.log('stderr getCalls', t.context.stderr.getCalls());
     // TODO: t.true(t.context.spy.calledWith(err.stack));
     if (level === 'debug')
       t.true(t.context.stderr.calledWithMatch(err.message));
@@ -53,65 +58,65 @@ Logger.levels.forEach(level => {
   });
 });
 
-Logger.levels.forEach(level => {
+Axe.levels.forEach(level => {
   test(`level ${level} allows four or more args`, t => {
     const args = ['arg1', 'arg2', 'arg3', 'arg4', 'arg5'];
-    t.context.logger[level](...args);
+    t.context.axe[level](...args);
     const message = format(...args);
     if (level === 'debug') t.true(t.context.stderr.calledWithMatch(message));
     else t.true(t.context.spy.calledWithMatch(message));
   });
 });
 
-Logger.levels.forEach(level => {
+Axe.levels.forEach(level => {
   test(`level ${level} allows message using placeholder token`, t => {
     const args = ['arg1 %s hello world', 'arg2'];
-    t.context.logger[level](...args);
+    t.context.axe[level](...args);
     const message = format(...args);
     if (level === 'debug') t.true(t.context.stderr.calledWithMatch(message));
     else t.true(t.context.spy.calledWithMatch(message));
   });
 });
 
-Logger.levels.forEach(level => {
+Axe.levels.forEach(level => {
   test(`level ${level} converts a meta Array to String`, t => {
     const args = ['hello', [1, 2, 3]];
-    t.context.logger[level](...args);
+    t.context.axe[level](...args);
     const message = format(...args);
     if (level === 'debug') t.true(t.context.stderr.calledWithMatch(message));
     else t.true(t.context.spy.calledWithMatch(message));
   });
 });
 
-Logger.levels.forEach(level => {
+Axe.levels.forEach(level => {
   test(`level ${level} converts message to String if not one`, t => {
-    t.context.logger[level](false);
+    t.context.axe[level](false);
     if (level === 'debug') t.true(t.context.stderr.calledWithMatch('false'));
     else t.true(t.context.spy.calledWithMatch('false'));
   });
 });
 
 test('log can be used like console.log(message)', t => {
-  t.context.logger.log('hello world');
+  t.context.axe.log('hello world');
   t.true(t.context.spy.calledWithMatch('hello world'));
 });
 
 test('log can be used like console.log(message, meta)', t => {
   const message = 'hello world';
-  t.context.logger.log(message, { user: { username: 'test' } });
+  t.context.axe.log(message, { user: { username: 'test' } });
   t.true(t.context.spy.calledWithMatch(message));
   t.true(t.context.spy.calledWith({ user: { username: 'test' } }));
 });
 
 test('log can be used with util.format', t => {
   const args = ['arg1', 'arg2', 'arg3', 'arg4', 'arg5'];
-  t.context.logger.log(...args);
+  t.context.axe.log(...args);
   t.true(t.context.spy.calledWithMatch(format(...args)));
 });
 
 test('log can be used with placeholder tokens', t => {
   const args = ['arg1 %s hello world', 'arg2'];
   const message = format(...args);
-  t.context.logger.log(...args);
+  t.context.axe.log(...args);
   t.true(t.context.spy.calledWithMatch(message));
 });
