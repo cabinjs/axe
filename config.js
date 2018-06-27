@@ -8,7 +8,7 @@ docute.init({
     default: [
       {
         title:
-          'Logging utility for Node and Browser environments. Chop up your logs!',
+          'Logging add-on to send logs over HTTP to your server in Node and Browser environments',
         path: '/'
       }
     ]

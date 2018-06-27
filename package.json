@@ -1,8 +1,11 @@
 {
   "name": "axe",
-  "description": "Logging utility for Node and Browser environments. Chop up your logs!",
-  "version": "0.1.0",
+  "description": "Logging add-on to send logs over HTTP to your server in Node and Browser environments. Works with any logger! Chop up your logs consistently! Made for Cabin and Lad.",
+  "version": "1.0.0",
   "author": "Nick Baugh <niftylettuce@gmail.com> (http://niftylettuce.com)",
+  "ava": {
+    "serial": true
+  },
   "bugs": {
     "url": "https://github.com/cabinjs/axe/issues"
   },
@@ -11,24 +14,25 @@
     "Alexis Tyler <xo@wvvw.me> (https://wvvw.me/)"
   ],
   "dependencies": {
-    "browser-or-node": "^1.0.2",
-    "debug": "^3.1.0",
+    "console-polyfill": "^0.3.0",
+    "fast-safe-stringify": "^2.0.4",
+    "format-util": "^1.0.3",
     "lodash": "^4.17.10",
-    "luxon": "^1.3.0",
-    "signale": "^1.2.1"
+    "parse-err": "^0.0.2",
+    "superagent": "^3.8.3",
+    "superagent-retry": "^0.6.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.51",
     "@babel/core": "^7.0.0-beta.51",
     "@babel/preset-env": "^7.0.0-beta.51",
-    "@babel/preset-es2015": "^7.0.0-beta.51",
     "ava": "^1.0.0-beta.6",
     "babelify": "^9.0.0",
     "browserify": "^16.2.2",
     "caniuse-lite": "^1.0.30000856",
     "codecov": "^3.0.2",
     "cross-env": "^5.2.0",
-    "eslint": "^4.19.1",
+    "eslint": "^5.0.0",
     "eslint-config-prettier": "^2.9.0",
     "eslint-plugin-compat": "^2.4.0",
     "eslint-plugin-prettier": "^2.6.0",
@@ -42,42 +46,53 @@
     "remark-cli": "^5.0.0",
     "remark-preset-github": "^0.0.8",
     "rimraf": "^2.6.2",
-    "rollup": "^0.61.0",
     "sinon": "^6.0.0",
     "tinyify": "^2.4.3",
-    "uglify-js": "^3.4.0",
     "xo": "^0.21.1"
   },
   "engines": {
     "node": ">=6.4"
   },
+  "files": [
+    "lib",
+    "dist"
+  ],
   "homepage": "https://github.com/cabinjs/axe",
   "keywords": [
-    "console",
-    "signale",
-    "hackable",
+    "airbrake",
+    "analytic",
+    "analytics",
+    "api",
+    "axe",
+    "bugsnag",
+    "bunyan",
+    "cabin",
+    "cabinjs",
+    "chalk",
     "color",
     "colored",
-    "chalk",
-    "transport",
-    "api",
-    "wrapper",
-    "official",
+    "connect",
+    "console",
+    "express",
+    "hackable",
+    "hapi",
+    "koa",
+    "lad",
     "ladjs",
-    "lad-logger",
-    "logger",
     "lass",
-    "winston",
-    "bunyan",
     "log",
+    "logger",
+    "logging",
+    "loggly",
+    "middleware",
+    "official",
     "raven",
     "sentry",
-    "airbrake",
-    "cabin",
-    "bugsnag",
+    "signale",
     "timber",
-    "cabinjs",
-    "axe"
+    "transport",
+    "winston",
+    "wrapper"
   ],
   "license": "MIT",
   "lint-staged": {
@@ -91,12 +106,6 @@
     ]
   },
   "main": "lib/index.js",
-  "browser": "dist/axe.js",
-  "unpkg": "dist/axe.min.js",
-  "files": [
-    "lib",
-    "dist"
-  ],
   "remarkConfig": {
     "plugins": [
       "preset-github"
@@ -106,24 +115,22 @@
     "type": "git",
     "url": "https://github.com/cabinjs/axe"
   },
-  "ava": {
-    "serial": true
-  },
   "scripts": {
-    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "lint": "xo && remark . -qfo && eslint lib,dist",
-    "precommit": "lint-staged && npm test",
-    "test": "npm run build && npm run lint && npm run ava",
-    "test-coverage": "npm run build && npm run lint && npm run nyc",
     "ava": "cross-env NODE_ENV=test ava",
-    "nyc": "cross-env NODE_ENV=test nyc ava",
+    "browserify": "browserify src/index.js -o dist/axe.js -s Axe -d -t babelify",
     "build": "npm run build:clean && npm run build:lib && npm run build:dist",
     "build:clean": "rimraf lib dist",
-    "build:lib": "babel src --out-dir lib",
     "build:dist": "npm run browserify && npm run minify",
-    "browserify": "browserify src/index.js -o dist/axe.js -s Axe -d -t babelify",
-    "minify": "browserify src/index.js -s Axe -d -t babelify -p tinyify | uglifyjs --source-map content=inline,includeSources,url=inline -cm -o dist/axe.min.js"
+    "build:lib": "babel src --out-dir lib",
+    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
+    "lint": "xo && remark . -qfo && eslint lib && eslint dist",
+    "minify": "cross-env NODE_ENV=production browserify src/index.js -o dist/axe.min.js -s Axe -d -t babelify -p tinyify",
+    "nyc": "cross-env NODE_ENV=test nyc ava",
+    "precommit": "lint-staged && npm test",
+    "test": "npm run build && npm run lint && npm run ava",
+    "test-coverage": "npm run build && npm run lint && npm run nyc"
   },
+  "unpkg": "dist/axe.min.js",
   "xo": {
     "extends": "prettier",
     "plugins": [
@@ -132,10 +139,6 @@
     "parserOptions": {
       "sourceType": "script"
     },
-    "env": [
-      "node",
-      "browser"
-    ],
     "rules": {
       "prettier/prettier": [
         "error",
@@ -159,27 +162,6 @@
     "space": true,
     "ignore": [
       "config.js"
-    ],
-    "overrides": [
-      {
-        "plugins": [
-          "prettier",
-          "compat"
-        ],
-        "parserOptions": {
-          "sourceType": "script"
-        },
-        "files": [
-          "lib/**/*.js"
-        ],
-        "envs": [
-          "browser",
-          "node"
-        ],
-        "rules": {
-          "compat/compat": "error"
-        }
-      }
     ]
   }
 }

@@ -1,8 +1,24 @@
-const { format } = require('util');
-const debug = require('debug');
-const _ = require('lodash');
-const { isBrowser, isNode } = require('browser-or-node');
-const { Signale } = require('signale');
+const format = require('format-util');
+const superagent = require('superagent');
+const parseErr = require('parse-err');
+const safeStringify = require('fast-safe-stringify');
+// <https://lacke.mn/reduce-your-bundle-js-file-size/>
+// <https://github.com/lodash/babel-plugin-lodash/issues/221>
+const isError = require('lodash/isError');
+const isObject = require('lodash/isObject');
+const isString = require('lodash/isString');
+const includes = require('lodash/includes');
+const omit = require('lodash/omit');
+const isEmpty = require('lodash/isEmpty');
+const isPlainObject = require('lodash/isPlainObject');
+const isUndefined = require('lodash/isUndefined');
+const isNull = require('lodash/isNull');
+
+// add retry logic to superagent
+require('superagent-retry')(superagent);
+
+// eslint-disable-next-line import/no-unassigned-import
+require('console-polyfill');
 
 // these are known as "placeholder tokens", see this link for more info:
 // <https://nodejs.org/api/util.html#util_util_format_format_args>
@@ -11,56 +27,56 @@ const { Signale } = require('signale');
 // we just define an array that contains them for now
 // <https://github.com/nodejs/node/issues/17601>
 const tokens = ['%s', '%d', '%i', '%f', '%j', '%o', '%O', '%%'];
+const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
+const endpoint = 'https://api.cabinjs.com';
 
 class Axe {
   constructor(config = {}) {
-    // debugName gets passed to logger.debug
     this.config = Object.assign(
       {
-        timestamp: 'toLocaleString', // or toISO
-        locale: 'en',
+        key: '',
+        endpoint,
+        headers: {},
+        timeout: 5000,
+        retry: 3,
         showStack: true,
+        showMeta: false,
         silent: false,
-        appName: 'axe',
-        processName: null,
-        levels: ['debug', 'info', 'warning', 'error', 'fatal'],
-        signale: {}
+        logger: console,
+        levels: ['info', 'warn', 'error', 'fatal'],
+        capture: true
       },
       config
     );
-
-    // bind nice a logger that we'll use based on
-    // the environment instead of VanillaJS `console`
-    this.signale = new Signale(this.config.signale);
-
-    // signale allows a scope [prefix] name
-    if (isNode && this.config.processName)
-      this.signale.scope(this.config.processName);
 
     // we could have used `auto-bind` but it's not compiled for browser
     this.log = this.log.bind(this);
 
     // bind helper functions for each log level
-    Axe.levels.forEach(level => {
-      this[level] = (...args) => {
+    levels.forEach(level => {
+      this[level] = (...args) =>
         this.log(...[level].concat([].slice.call(args)));
-      };
     });
 
     // aliases
     this.err = this.error;
-    this.warn = this.warning;
+    this.warning = this.warn;
   }
 
   // eslint-disable-next-line complexity
   log(level, message, meta = {}, ...args) {
+    const originalArgs = [level, message, meta, ...[].slice.call(args)];
     const { config } = this;
     let modifier = 0;
 
-    if (level === 'warn') level = 'warning';
+    if (level === 'warning') level = 'warn';
     if (level === 'err') level = 'error';
 
-    if (!_.isString(level) || !_.includes(config.levels, level)) {
+    if (isError(level)) {
+      meta = message;
+      message = level;
+      level = 'error';
+    } else if (!isString(level) || !includes(levels, level)) {
       meta = message;
       message = level;
       level = 'info';
@@ -70,76 +86,109 @@ class Axe {
     // if there are four or more args
     // then infer to use util.format on everything
     if (arguments.length >= 4 + modifier) {
-      message = format(
-        ...[]
-          .concat([level, message, meta].slice.call(args))
-          .slice(1 + modifier)
-      );
+      message = format(...originalArgs.slice(1 + modifier));
       meta = {};
     } else if (
       arguments.length === 3 + modifier &&
-      _.isString(message) &&
-      tokens.some(t => message.includes(t))
+      isString(message) &&
+      tokens.some(t => includes(message, t))
     ) {
       // otherwise if there are three args and if the `message` contains
       // a placeholder token (e.g. '%s' or '%d' - see above `tokens` variable)
       // then we can infer that the `meta` arg passed is used for formatting
       message = format(message, meta);
       meta = {};
-    } else if (
-      !_.isPlainObject(meta) &&
-      !_.isUndefined(meta) &&
-      !_.isNull(meta)
-    ) {
-      // if the `meta` variable passed was not an Object then convert it
-      message = format(message, meta);
-      meta = {};
-    } else if (!_.isString(message)) {
-      // if the message is not a string then we should run `util.format` on it
-      // assuming we're formatting it like it was another argument
-      // (as opposed to using something like fast-json-stringify)
-      message = format(message);
+    } else if (!isError(message)) {
+      if (isError(meta)) {
+        meta = { err: parseErr(meta) };
+      } else if (!isPlainObject(meta) && !isUndefined(meta) && !isNull(meta)) {
+        // if the `meta` variable passed was not an Object then convert it
+        message = format(message, meta);
+        meta = {};
+      } else if (!isString(message)) {
+        // if the message is not a string then we should run `util.format` on it
+        // assuming we're formatting it like it was another argument
+        // (as opposed to using something like fast-json-stringify)
+        message = format(message);
+      }
     }
 
-    if (!_.isPlainObject(meta)) meta = {};
+    if (!isPlainObject(meta)) meta = {};
 
     let err;
-    if (_.isError(message)) {
+    if (isError(message)) {
       err = message;
-      if (!_.isObject(meta.err))
-        meta.err = { stack: message.stack, message: message.message };
+      if (!isObject(meta.err)) meta.err = parseErr(err);
       ({ message } = message);
     }
 
     // set default level on meta
     meta.level = level;
 
-    // TODO: send to cabin here (message, meta)
+    // set the body used for returning with and sending logs
+    // (and also remove circular references)
+    const body = safeStringify({ message, meta });
+
+    // send to Cabin or other logging service here the `message` and `meta`
+    if (
+      config.capture &&
+      includes(config.levels, level) &&
+      (!isError(err) || !err._captureFailed)
+    ) {
+      // if the user didn't specify a key
+      // and they are using the default endpoint
+      // then we should throw an error to them
+      if (config.endpoint === endpoint && !config.key)
+        throw new Error(
+          "Please provide your Cabin API key as `new Axe({ key: 'YOUR-CABIN-API-KEY' })`.\nVisit <https://cabinjs.com> to sign up for free!\nHide this message with `new Axe({ capture: false })`."
+        );
+
+      // capture the log over HTTP
+      const req = superagent.post(config.endpoint).timeout(config.timeout);
+
+      // basic auth (e.g. Cabin API key)
+      if (config.key) req.auth(config.key);
+
+      // set headers if any
+      if (!isEmpty(config.headers)) req.set(config.headers);
+
+      req
+        .retry(config.retry)
+        .send(body)
+        .end(err => {
+          if (err) {
+            err._captureFailed = true;
+            this.config.logger.error(err);
+          }
+        });
+    }
 
     // Suppress logs if it was silent
-    if (config.silent) return;
+    if (config.silent) return body;
 
-    if (level === 'debug') {
-      let name = config.processName;
-      if (!name && require.main && require.main.filename)
-        name = require.main.filename;
-      if (!name) name = config.appName;
-      debug(name)(message, _.omit(meta, 'level'));
+    // if there was meta information then output it
+    const omitted = omit(meta, ['level', 'err']);
+
+    // fatal should use error (e.g. in browser)
+    if (level === 'fatal') level = 'error';
+
+    // if we didn't pass a level as a method
+    // (e.g. console.info), then we should still
+    // use the logger's `log` method to output
+    if (modifier === -1) level = 'log';
+
+    // show stack trace if necessary (along with any metadata)
+    if (level === 'error' && isError(err) && config.showStack) {
+      if (!config.showMeta || isEmpty(omitted)) this.config.logger.error(err);
+      else this.config.logger.error(err, omitted);
+    } else if (!config.showMeta || isEmpty(omitted)) {
+      this.config.logger[level](message);
     } else {
-      if (isBrowser && config.processName)
-        message = `[${config.processName}] ${message}`;
-
-      // if there was meta information then output it
-      const omitted = _.omit(meta, ['level', 'err']);
-      if (_.isEmpty(omitted)) this.signale[level](message);
-      else this.signale[level](message, omitted);
-
-      // if we're not showing the stack trace then return early
-      if (!config.showStack) return;
-
-      // output the stack trace to the console for debugging
-      if (err) this.signale.error(err);
+      this.config.logger[level](message, omitted);
     }
+
+    // return the parsed body in case we need it
+    return body;
   }
 }
 

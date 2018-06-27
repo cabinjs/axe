@@ -17,7 +17,7 @@ test.before.cb(t => {
 });
 
 test('should create a new Axe instance', t => {
-  const axe = new t.context.window.Axe();
+  const axe = new t.context.window.Axe({ capture: false });
   t.true(_.isObject(axe));
   axe.info('hello');
 });

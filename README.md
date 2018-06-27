@@ -7,9 +7,7 @@
 [![made with lass](https://img.shields.io/badge/made_with-lass-95CC28.svg)](https://github.com/lassjs/lass)
 [![license](https://img.shields.io/github/license/cabinjs/axe.svg)](<>)
 
-> Logging utility for Node and Browser environments. Chop up your logs!
->
-> Built on top of [Signale][] and [high-console][]. Made for [Cabin][] and [Lad][].
+> Logging add-on to send logs over HTTP to your server in Node and Browser environments. Works with any logger! Chop up your logs consistently! Made for [Cabin][] and [Lad][].
 
 
 ## Table of Contents
@@ -17,12 +15,15 @@
 * [Install](#install)
   * [Node](#node)
   * [Browser](#browser)
+* [Approach](#approach)
 * [Usage](#usage)
   * [Basic](#basic)
-  * [Hide timestamps from console output](#hide-timestamps-from-console-output)
+  * [Custom logger](#custom-logger)
+  * [Custom endpoint](#custom-endpoint)
   * [Suppress logs](#suppress-logs)
-  * [Specify process name](#specify-process-name)
+  * [Stack Traces and Error Handling](#stack-traces-and-error-handling)
 * [Options](#options)
+* [Aliases](#aliases)
 * [Contributors](#contributors)
 * [Trademark Notice](#trademark-notice)
 * [License](#license)
@@ -51,9 +52,8 @@ yarn add axe
 ```html
 <script src="https://unpkg.com/axe"></script>
 <script type="text/javascript">
-  <!-- See "Usage" section in Axe docs -->
   (function() {
-    var Axe = new Axe();
+    var Axe = new Axe({ key: 'YOUR-CABIN-API-KEY' });
     axe.info('hello world');
   });
 </script>
@@ -64,6 +64,70 @@ yarn add axe
 If you're using something like [browserify][], [webpack][], or [rollup][], then install the package as you would with [Node](#node) above.
 
 
+## Approach
+
+We adhere to the [Log4j][log4j] standard.  This means that you can use any [custom logger](#custom-logger) (or the default `console`), but we strictly support the following log levels:
+
+* `trace`
+* `debug`
+* `info`
+* `warn`
+* `error`
+* `fatal` (uses `error`)
+
+We highly recommend that you follow this approach when logging `(message, meta)`:
+
+```js
+const message = 'Hello world';
+const meta = { beep: 'boop', foo: true };
+axe.info(message, meta);
+```
+
+You can also make logs with three arguments `(level, message, meta)`:
+
+```js
+const level = 'info';
+const message = 'Hello world';
+const meta = { beep: 'boop', foo: true };
+axe.log(level, message, meta);
+```
+
+You should also log errors like this:
+
+```js
+const err = new Error('Oops!');
+axe.error(err);
+```
+
+**To recap:** The first argument `message` should be a String, and the second `meta` should be an optional Object.
+
+If you simply use `axe.log`, then the log level used will be `info`, but it will still use the logger's native `log` method (as opposed to using `info`).
+
+If you invoke `axe.log` (or any other logging method, e.g. `info`), then it will return a consistent value no matter the edge case.
+
+For example, if you log `axe.log('hello world')`, it will output with `console.log` (or your custom logger's `log` method) and `return` the Object:
+
+```js
+{ message: 'hello world', meta: { level: 'info' } }
+```
+
+And if you were to log `axe.info('hello world')`, it will output with `console.info` (or your custom logger's `info` method) and `return` the Object:
+
+```js
+{ message: 'hello world', meta: { level: 'info' } }
+```
+
+Lastly if you were to log `axe.warn('uh oh!', { amount_spent: 50 })`, it will output with `console.warn` (or your custom logger's `warn` method) and `return` the Object:
+
+```js
+{ message: 'uh oh!', meta: { amount_spent: 50, level: 'warn' } }
+```
+
+These returned values will be automatically sent to the endpoint (by default to your [Cabin][] account associated with your API key).
+
+**This consistency among server and browser environments is the beauty of Axe – and when used in combination with [Cabin][], your logs will be beautiful with HTTP request information, user metadata, IP address, User-Agent, and more!**
+
+
 ## Usage
 
 ### Basic
@@ -71,59 +135,100 @@ If you're using something like [browserify][], [webpack][], or [rollup][], then 
 ```js
 const Axe = require('axe');
 
-const axe = new Axe();
+const axe = new Axe({ key: 'YOUR-CABIN-API-KEY' });
 
 axe.info('hello world');
-// info: hello world
 ```
 
-### Hide timestamps from console output
+### Custom logger
+
+By default, Axe uses the built-in `console` (with [console-polyfill][] for cross-browser support).
+
+However you might want to use something fancier, and as such we support _any_ logger out of the box.
+
+Loggers supported include, but are not limited to:
+
+* [consola][]
+* [pino][]
+* [signale][]
+* [bunyan][]
+* [winston][]
+* [high-console][]
+
+> Just pass your custom logging utility as the `logger` option:
+
+```js
+const signale = require('signale');
+const Axe = require('axe');
+
+const axe = new Axe({ logger: signale, key: 'YOUR-CABIN-API-KEY' });
+
+axe.info('hello world');
+```
+
+In [Lad][], we have an approach similar to the following, where non-production environments use [consola][], and production environments use [pino][].
 
 ```js
 const Axe = require('axe');
+const consola = require('consola');
+const pino = require('pino')();
 
-const axe = new Axe({ timestamp: false });
+const isProduction = process.env.NODE_ENV === 'production';
+const logger = new Axe({
+  logger: isProduction ? pino : consola,
+  capture: false
+});
+
+logger.info('hello world');
 ```
+
+### Custom endpoint
+
+By default we built-in support such that if you provide your [Cabin][] API key, then your logs will be uploaded automatically for you in both server and browser environments.
+
+If you decide to [self-host your own Cabin API][cabin-api] (or roll your own logging service) then you can specify your own endpoint under `config.endpoint`.
+
+See [Options](#options) below for more information.
 
 ### Suppress logs
 
-This is useful when you want need logging turned on in certain circumstances.
+This is useful when you want need logging turned off in certain environments.
+
 For example when you're running tests you can set `axe.config.silent = true`.
 
 ```js
 const Axe = require('axe');
 
-const axe = new Axe({ silent: true });
+const axe = new Axe({ silent: true, key: 'YOUR-CABIN-API-KEY' });
 
 axe.info('hello world');
 ```
 
-### Specify process name
+### Stack Traces and Error Handling
 
-In case you need to run multiple node processes together we recommend passing a `processName` to the logger.
+Please see Cabin's documentation for [stack traces and error handling](https://github.com/cabinjs/cabin#stack-traces-and-error-handling) for more information.
 
-Note that for `axe.debug`, we will default to `appName` if `processName` is not set.
-
-```js
-const Axe = require('axe');
-
-const axe = new Axe({ processName: 'web' });
-
-axe.info('hello world');
-// [web] info: hello world
-```
+> If you're not using `cabin`, you can simply replace instances of the word `cabin` with `axe` in the documentation examples linked above.
 
 
 ## Options
 
-* `timestamp` (String) - defaults to `toLocaleString` (which outputs a [locale string][locale]), you can also specify `toISO` if you wish to output a [ISO 8601 string][iso-8601].  If you specify `false` (Boolean) then no timestamp will be prepended (this uses [luxon][] under the hood).
-* `locale` (String) - defaults to `en` (but you could specify something like `fr` to get French or `es` to get Spanish localization output for timestamps)
+* `key` (String) - defaults to an empty string, so BasicAuth is not used – **this is your Cabin API key**, which you can get for free at [Cabin][] (note you could provide your own API key here if you are self-hosting or rolling your own logging service)
+* `endpoint` (String) - defaults to `https://api.cabinjs.com`
+* `headers` (Object) - HTTP headers to send along with log to the `endpoint`
+* `timeout` (Number) - defaults to `5000`, number of milliseconds to wait for a response
+* `retry` (Number) - defaults to `3`, number of attempts to retry sending log over HTTP
 * `showStack` (Boolean) - defaults to `true`, whether or not to output a stack trace
+* `showMeta` (Boolean) - defaults to `false`, whether or not to output metadata to logger methods
 * `silent` (Boolean) - defaults to `false`, whether or not to suppress log output to console
-* `appName` (String) - defaults to `"axe"`, used for `axe.debug` output primarily
-* `processName` (String) - defaults to `null`, whether or not to prepend logs with the String `[appName] ...`
-* `processColor` (String) - defaults to `bgCyan`, the background color to use behind the String `[appName]` (this is only applicable for server environments)
-* `logger` (Object) - defaults to an empty Object `{}`, but you can pass custom options for the browser ([high-console][]) or the server ([signale][]) here
+* `logger` (Object) - defaults to `console` (with [console-polyfill][] added automatically), but you may wish to use a [custom logger](#custom-logger)
+* `levels` (Array) - an Array of levels to capture (defaults to `[ 'info', 'warn', 'error', 'fatal' ]`
+* `capture` (Boolean) - defaults to `true`, whether or not to `POST` logs to the `endpoint` (takes into consideration the `config.levels` to only send valid capture levels)
+
+
+## Aliases
+
+We have provided helper/safety aliases for `logger.warn` and `logger.error` of `logger.warning` and `logger.err` respectively.
 
 
 ## Contributors
@@ -166,8 +271,16 @@ If you are seeking permission to use these trademarks, then please [contact us](
 
 [high-console]: https://github.com/tusharf5/high-console
 
-[iso-8601]: https://moment.github.io/luxon/docs/manual/formatting.html#iso-8601
+[pino]: https://github.com/pinojs/pino
 
-[locale]: https://moment.github.io/luxon/docs/manual/formatting.html#tolocalestring--strings-for-humans-
+[winston]: https://github.com/winstonjs/winston
 
-[luxon]: https://github.com/moment/luxon
+[bunyan]: https://github.com/trentm/node-bunyan
+
+[console-polyfill]: https://github.com/paulmillr/console-polyfill
+
+[cabin-api]: https://github.com/cabinjs/api.cabinjs.com
+
+[consola]: https://github.com/nuxt/consola
+
+[log4j]: https://en.wikipedia.org/wiki/Log4
