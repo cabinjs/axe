@@ -49,6 +49,8 @@ class Axe {
       config
     );
 
+    Object.assign(this, omit(this.config.logger, ['config', 'log']));
+
     // we could have used `auto-bind` but it's not compiled for browser
     this.log = this.log.bind(this);
 
