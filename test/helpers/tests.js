@@ -62,6 +62,26 @@ module.exports = (test, logger = console) => {
   });
 
   levels.forEach(level => {
+    test(`${name} level ${level} works with meta and showMeta`, t => {
+      const message = `${level} works with meta`;
+      const meta = { user: { username: 'test' } };
+      t.context.axe.config.showMeta = true;
+      t.context.axe[level](message, meta);
+      t.true(
+        t.context[map[level]].calledWith(
+          message,
+          sinon.match({
+            user: {
+              username: 'test'
+            }
+          })
+        )
+      );
+      t.context.axe.config.showMeta = false;
+    });
+  });
+
+  levels.forEach(level => {
     test(`${name} level ${level} works with Error as first argument`, t => {
       t.context.axe.config.showStack = true;
       const err = new Error(`test ${level} error`);

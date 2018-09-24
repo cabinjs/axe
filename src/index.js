@@ -41,7 +41,7 @@ class Axe {
         timeout: 5000,
         retry: 3,
         showStack: true,
-        showMeta: false,
+        showMeta: true,
         silent: false,
         logger: console,
         levels: ['info', 'warn', 'error', 'fatal'],
