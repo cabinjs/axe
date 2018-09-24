@@ -218,8 +218,8 @@ Please see Cabin's documentation for [stack traces and error handling](https://g
 * `headers` (Object) - HTTP headers to send along with log to the `endpoint`
 * `timeout` (Number) - defaults to `5000`, number of milliseconds to wait for a response
 * `retry` (Number) - defaults to `3`, number of attempts to retry sending log over HTTP
-* `showStack` (Boolean) - defaults to `true`, whether or not to output a stack trace
-* `showMeta` (Boolean) - defaults to `true`, whether or not to output metadata to logger methods
+* `showStack` (Boolean) - defaults to `true` in non-production environments (attempts to parse a boolean value from `process.env.SHOW_STACK`), whether or not to output a stack trace
+* `showMeta` (Boolean) - defaults to `false` (attempts to parse a boolean value from `process.env.SHOW_META` – meaning you can pass a flag `SHOW_META=true node app.js` when needed for debugging), whether or not to output metadata to logger methods
 * `silent` (Boolean) - defaults to `false`, whether or not to suppress log output to console
 * `logger` (Object) - defaults to `console` (with [console-polyfill][] added automatically), but you may wish to use a [custom logger](#custom-logger)
 * `levels` (Array) - an Array of levels to capture (defaults to `[ 'info', 'warn', 'error', 'fatal' ]`

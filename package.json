@@ -15,6 +15,7 @@
     "Alexis Tyler <xo@wvvw.me> (https://wvvw.me/)"
   ],
   "dependencies": {
+    "boolean": "^0.2.0",
     "console-polyfill": "^0.3.0",
     "fast-safe-stringify": "^2.0.4",
     "format-util": "^1.0.3",

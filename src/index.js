@@ -13,6 +13,7 @@ const isEmpty = require('lodash/isEmpty');
 const isPlainObject = require('lodash/isPlainObject');
 const isUndefined = require('lodash/isUndefined');
 const isNull = require('lodash/isNull');
+const boolean = require('boolean');
 
 // add retry logic to superagent
 require('superagent-retry')(superagent);
@@ -40,8 +41,8 @@ class Axe {
         headers: {},
         timeout: 5000,
         retry: 3,
-        showStack: true,
-        showMeta: true,
+        showStack: boolean(process.env.SHOW_STACK || env !== 'production'),
+        showMeta: boolean(process.env.SHOW_META),
         silent: false,
         logger: console,
         levels: ['info', 'warn', 'error', 'fatal'],
