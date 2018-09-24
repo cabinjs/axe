@@ -29,6 +29,7 @@ require('console-polyfill');
 const tokens = ['%s', '%d', '%i', '%f', '%j', '%o', '%O', '%%'];
 const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
 const endpoint = 'https://api.cabinjs.com';
+const env = process.env.NODE_ENV || 'development';
 
 class Axe {
   constructor(config = {}) {
@@ -44,7 +45,7 @@ class Axe {
         silent: false,
         logger: console,
         levels: ['info', 'warn', 'error', 'fatal'],
-        capture: true
+        capture: env === 'production'
       },
       config
     );
