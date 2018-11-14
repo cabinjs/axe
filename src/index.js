@@ -32,22 +32,20 @@ const env = process.env.NODE_ENV || 'development';
 
 class Axe {
   constructor(config = {}) {
-    this.config = Object.assign(
-      {
-        key: '',
-        endpoint,
-        headers: {},
-        timeout: 5000,
-        retry: 3,
-        showStack: boolean(process.env.SHOW_STACK || env !== 'production'),
-        showMeta: boolean(process.env.SHOW_META),
-        silent: false,
-        logger: console,
-        levels: ['info', 'warn', 'error', 'fatal'],
-        capture: env === 'production'
-      },
-      config
-    );
+    this.config = {
+      key: '',
+      endpoint,
+      headers: {},
+      timeout: 5000,
+      retry: 3,
+      showStack: boolean(process.env.SHOW_STACK || env !== 'production'),
+      showMeta: boolean(process.env.SHOW_META),
+      silent: false,
+      logger: console,
+      levels: ['info', 'warn', 'error', 'fatal'],
+      capture: env === 'production',
+      ...config
+    };
 
     Object.assign(this, omit(this.config.logger, ['config', 'log']));
 
