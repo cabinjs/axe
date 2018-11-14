@@ -1,5 +1,6 @@
 const format = require('format-util');
-const superagent = require('superagent');
+const superagent = require('@ladjs/superagent');
+const cuid = require('cuid');
 const parseErr = require('parse-err');
 const safeStringify = require('fast-safe-stringify');
 // <https://lacke.mn/reduce-your-bundle-js-file-size/>
@@ -14,20 +15,17 @@ const isPlainObject = require('lodash/isPlainObject');
 const isUndefined = require('lodash/isUndefined');
 const isNull = require('lodash/isNull');
 const boolean = require('boolean');
+const { standard } = require('message-headers');
+const formatSpecifiers = require('format-specifiers');
 
-// add retry logic to superagent
-require('superagent-retry')(superagent);
+const standardHeaders = standard.map(o => o['Header Field Name'].toLowerCase());
+
+const hasWindow =
+  typeof window !== 'undefined' && typeof window.document !== 'undefined';
 
 // eslint-disable-next-line import/no-unassigned-import
 require('console-polyfill');
 
-// these are known as "placeholder tokens", see this link for more info:
-// <https://nodejs.org/api/util.html#util_util_format_format_args>
-//
-// since they aren't exposed (or don't seem to be) by node (at least not yet)
-// we just define an array that contains them for now
-// <https://github.com/nodejs/node/issues/17601>
-const tokens = ['%s', '%d', '%i', '%f', '%j', '%o', '%O', '%%'];
 const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
 const endpoint = 'https://api.cabinjs.com';
 const env = process.env.NODE_ENV || 'development';
@@ -68,8 +66,10 @@ class Axe {
   }
 
   // eslint-disable-next-line complexity
-  log(level, message, meta = {}, ...args) {
-    const originalArgs = [level, message, meta, ...[].slice.call(args)];
+  log(level, message, meta, ...args) {
+    let originalArgs = [level, message];
+    if (!isUndefined(meta)) originalArgs.push(meta);
+    originalArgs = originalArgs.concat([].slice.call(args));
     const { config } = this;
     let modifier = 0;
 
@@ -89,16 +89,16 @@ class Axe {
 
     // if there are four or more args
     // then infer to use util.format on everything
-    if (arguments.length >= 4 + modifier) {
+    if (originalArgs.length >= 4 + modifier) {
       message = format(...originalArgs.slice(1 + modifier));
       meta = {};
     } else if (
-      arguments.length === 3 + modifier &&
+      originalArgs.length === 3 + modifier &&
       isString(message) &&
-      tokens.some(t => includes(message, t))
+      formatSpecifiers.some(t => includes(message, t))
     ) {
       // otherwise if there are three args and if the `message` contains
-      // a placeholder token (e.g. '%s' or '%d' - see above `tokens` variable)
+      // a placeholder token (e.g. '%s' or '%d' - see above `formatSpecifiers` variable)
       // then we can infer that the `meta` arg passed is used for formatting
       message = format(message, meta);
       meta = {};
@@ -144,17 +144,31 @@ class Axe {
       // then we should throw an error to them
       if (config.endpoint === endpoint && !config.key)
         throw new Error(
-          "Please provide your Cabin API key as `new Axe({ key: 'YOUR-CABIN-API-KEY' })`.\nVisit <https://cabinjs.com> to sign up for free!\nHide this message with `new Axe({ capture: false })`."
+          "Cabin API key required (e.g. `{ key: 'YOUR-CABIN-API-KEY' })`)\n<https://cabinjs.com>"
         );
 
       // capture the log over HTTP
-      const req = superagent.post(config.endpoint).timeout(config.timeout);
+      const req = superagent
+        .post(config.endpoint)
+        .set('X-Request-Id', cuid())
+        .timeout(config.timeout);
 
       // basic auth (e.g. Cabin API key)
       if (config.key) req.auth(config.key);
 
       // set headers if any
-      if (!isEmpty(config.headers)) req.set(config.headers);
+      if (!isEmpty(config.headers)) {
+        let { headers } = config;
+        if (hasWindow)
+          headers = Object.keys(config.headers).reduce((memo, header) => {
+            if (
+              !includes(standardHeaders, config.headers[header].toLowerCase())
+            )
+              memo[header] = config.headers[header];
+            return memo;
+          }, {});
+        req.set(headers);
+      }
 
       req
         .retry(config.retry)

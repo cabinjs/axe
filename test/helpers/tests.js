@@ -72,7 +72,7 @@ module.exports = (test, logger = console) => {
           message,
           sinon.match({
             user: {
-              username: 'test'
+              username: `test`
             }
           })
         )

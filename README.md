@@ -5,7 +5,7 @@
 [![code style](https://img.shields.io/badge/code_style-XO-5ed9c7.svg)](https://github.com/sindresorhus/xo)
 [![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 [![made with lass](https://img.shields.io/badge/made_with-lass-95CC28.svg)](https://github.com/lassjs/lass)
-[![license](https://img.shields.io/github/license/cabinjs/axe.svg)](<>)
+[![license](https://img.shields.io/github/license/cabinjs/axe.svg)](LICENSE)
 
 > Logging add-on to send logs over HTTP to your server in Node and Browser environments. Works with any logger! Chop up your logs consistently! Made for [Cabin][] and [Lad][].
 
@@ -124,6 +124,8 @@ Lastly if you were to log `axe.warn('uh oh!', { amount_spent: 50 })`, it will ou
 ```
 
 These returned values will be automatically sent to the endpoint (by default to your [Cabin][] account associated with your API key).
+
+You can also use format specifiers thanks to `format-util` and `format-specifiers`.  To view the full list of format specifiers see <https://github.com/nodejs/node/blob/master/doc/api/util.md#utilformatformat-args>.
 
 **This consistency among server and browser environments is the beauty of Axe – and when used in combination with [Cabin][], your logs will be beautiful with HTTP request information, user metadata, IP address, User-Agent, and more!**
 

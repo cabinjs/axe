@@ -3,3 +3,5 @@ favicon.ico
 config.js
 index.html
 CNAME
+.nyc_output
+coverage
