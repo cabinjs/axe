@@ -19,7 +19,7 @@ const { standard } = require('message-headers');
 const formatSpecifiers = require('format-specifiers');
 const parseAppInfo = require('parse-app-info');
 
-let appInfo = {};
+let appInfo;
 if (typeof parseAppInfo === 'function')
   parseAppInfo().then(app => {
     appInfo = app;
@@ -135,7 +135,7 @@ class Axe {
     meta.level = level;
 
     // add `app` object to metadata
-    meta.app = appInfo;
+    if (appInfo) meta.app = appInfo;
 
     // set the body used for returning with and sending logs
     // (and also remove circular references)
