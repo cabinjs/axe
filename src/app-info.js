@@ -1,9 +1,9 @@
 const parseAppInfo = require('parse-app-info');
 
-const appInfo = {};
+let appInfo = {};
 
 parseAppInfo().then(app => {
-  appInfo.app = app;
+  appInfo = app;
 });
 
 module.exports = appInfo;
