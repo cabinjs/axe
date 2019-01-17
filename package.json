@@ -8,7 +8,7 @@
     "failFast": true
   },
   "browser": {
-    "./src/app-info.js": false
+    "parse-app-info": false
   },
   "bugs": {
     "url": "https://github.com/cabinjs/axe/issues"

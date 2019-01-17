@@ -17,8 +17,13 @@ const isNull = require('lodash/isNull');
 const boolean = require('boolean');
 const { standard } = require('message-headers');
 const formatSpecifiers = require('format-specifiers');
+const parseAppInfo = require('parse-app-info');
 
-const appInfo = require('./app-info');
+let appInfo = {};
+if (typeof parseAppInfo === 'function')
+  parseAppInfo().then(app => {
+    appInfo = app;
+  });
 
 const standardHeaders = standard.map(o => o['Header Field Name'].toLowerCase());
 
