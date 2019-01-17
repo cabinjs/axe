@@ -3083,6 +3083,13 @@ dot-prop@^4.1.0, dot-prop@^4.2.0:
   dependencies:
     is-obj "^1.0.0"
 
+dotgitconfig@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/dotgitconfig/-/dotgitconfig-1.0.1.tgz#7a7f0957871f88f6c2cd6265f924ca605fb35cce"
+  integrity sha512-a6RPc5Cco7ogiKLVExcGBMEEP6jHkzJFYbS/HYGFvQSZrm3EkC876YIqqrj92N8SZYGLqPz6pU522/LlNAaedQ==
+  dependencies:
+    ini "^1.3.5"
+
 duplexer2@^0.1.2, duplexer2@~0.1.0, duplexer2@~0.1.2:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/duplexer2/-/duplexer2-0.1.4.tgz#8b12dab878c0d69e3e7891051662a32fc6bddcc1"
@@ -4761,7 +4768,7 @@ inherits@2.0.1:
   resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.1.tgz#b17d08d326b4423e568eff719f91b0b1cbdf69f1"
   integrity sha1-sX0I0ya0Qj5Wjv9xn5GwscvfafE=
 
-ini@^1.3.4, ini@~1.3.0:
+ini@^1.3.4, ini@^1.3.5, ini@~1.3.0:
   version "1.3.5"
   resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.5.tgz#eee25f56db1c9ec6085e0c22778083f596abf927"
   integrity sha512-RZY5huIKCMRWDUqZlEi72f/lmXKMvuszcMBduliQ3nnWbx9X/ZBQO7DijMEYS9EhHBb2qacRUMtC7svLwe0lcw==
@@ -5868,6 +5875,13 @@ labeled-stream-splicer@^2.0.0:
     inherits "^2.0.1"
     isarray "^2.0.4"
     stream-splicer "^2.0.0"
+
+last-commit-log@^2.0.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/last-commit-log/-/last-commit-log-2.1.0.tgz#111db97c56d50bae620c6287a6a0350a8e13a8df"
+  integrity sha512-vvZNAaiPSQ/PtyfDP2UrIRwKx0xttliGSwEfd/4tU1B/2iD/g4e3nWbttYb6YLarpULpM6s5OW5JWl97ogB6jA==
+  dependencies:
+    dotgitconfig "^1.0.1"
 
 latest-version@^3.0.0:
   version "3.1.0"
@@ -7296,6 +7310,14 @@ parents@^1.0.0, parents@^1.0.1:
   dependencies:
     path-platform "~0.11.15"
 
+parse-app-info@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/parse-app-info/-/parse-app-info-1.0.3.tgz#6550dff161e3919d34917613c8580177d9d84a83"
+  integrity sha512-eCCOM8q5eLp0j0b7gw4BFshTeRLS4AQ8jdW8aJAOsXOKnPAgaYM1rA/ZFdkwXakXvVMWLY7VZQDbA/M1vs58+A==
+  dependencies:
+    last-commit-log "^2.0.0"
+    read-pkg-up "^4.0.0"
+
 parse-asn1@^5.0.0:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/parse-asn1/-/parse-asn1-5.1.1.tgz#f6bf293818332bd0dab54efb16087724745e6ca8"
@@ -8090,7 +8112,7 @@ remark-heading-gap@^3.0.0:
   resolved "https://registry.yarnpkg.com/remark-heading-gap/-/remark-heading-gap-3.1.0.tgz#6a1851b4226fa82441ae1365bbd599d34b12d812"
   integrity sha512-KxH9CTgfDnVTZVMMLJRw73zxZSWGX+p6x/trG7ed2UsEYqMRr8Dqtu/SXp2vD1ZZhPM8CpS7SjS+qjmiaRFotw==
 
-"remark-license@github:niftylettuce/remark-license":
+remark-license@niftylettuce/remark-license:
   version "4.0.1"
   resolved "https://codeload.github.com/niftylettuce/remark-license/tar.gz/17ecb8f64f8f6082414d14f9267a12764e6ddbfb"
   dependencies:

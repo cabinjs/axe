@@ -18,6 +18,8 @@ const boolean = require('boolean');
 const { standard } = require('message-headers');
 const formatSpecifiers = require('format-specifiers');
 
+const appInfo = require('./app-info');
+
 const standardHeaders = standard.map(o => o['Header Field Name'].toLowerCase());
 
 const hasWindow =
@@ -126,6 +128,9 @@ class Axe {
 
     // set default level on meta
     meta.level = level;
+
+    // add `app` object to metadata
+    meta.app = appInfo;
 
     // set the body used for returning with and sending logs
     // (and also remove circular references)
