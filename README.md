@@ -16,6 +16,7 @@
   * [Node](#node)
   * [Browser](#browser)
 * [Approach](#approach)
+* [Application Information](#application-information)
 * [Usage](#usage)
   * [Basic](#basic)
   * [Custom logger](#custom-logger)
@@ -128,6 +129,29 @@ These returned values will be automatically sent to the endpoint (by default to 
 You can also use format specifiers thanks to `format-util` and `format-specifiers`.  To view the full list of format specifiers see <https://github.com/nodejs/node/blob/master/doc/api/util.md#utilformatformat-args>.
 
 **This consistency among server and browser environments is the beauty of Axe – and when used in combination with [Cabin][], your logs will be beautiful with HTTP request information, user metadata, IP address, User-Agent, and more!**
+
+
+## Application Information
+
+By default a `meta.app` property is populated in all logs for you using [parse-app-info][].
+
+At a glance, here are the properties that are automatically populated for you:
+
+| Property    | Description                         |
+| ----------- | ----------------------------------- |
+| environment | The value of NODE_ENV               |
+| hostname    | Name of the computer                |
+| name        | Name of the app from `package.json` |
+| node        | Version if node.js running the app  |
+| pid         | Process ID as in `process.pid`      |
+| version     | Version of the app `package.json`   |
+
+Additional properties when the app is in a git repository
+
+| Property | Description                                                        |
+| -------- | ------------------------------------------------------------------ |
+| hash     | git hash of latest commit if the app                               |
+| tag      | the latest git tag. Property is not available when there is no tag |
 
 
 ## Usage
@@ -286,3 +310,5 @@ If you are seeking permission to use these trademarks, then please [contact us](
 [consola]: https://github.com/nuxt/consola
 
 [log4j]: https://en.wikipedia.org/wiki/Log4
+
+[parse-app-info]: https://github.com/cabinjs/parse-app-info
