@@ -1,4 +1,4 @@
-const format = require('format-util');
+const format = require('util-format-x');
 const superagent = require('@ladjs/superagent');
 const cuid = require('cuid');
 const parseErr = require('parse-err');

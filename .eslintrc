@@ -14,6 +14,11 @@
     "no-undef": "warn",
     "no-unused-vars": "warn",
     "no-useless-escape": "warn",
+    "max-statements": [ "off" ],
+    "complexity": [ "off" ],
+    "no-constant-condition": "warn",
+    "no-fallthrough": "warn",
+    "no-sparse-arrays": "warn",
     "node/no-deprecated-api": "warn"
   },
   "settings": { "polyfills": [ "promises" ] }
