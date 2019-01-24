@@ -27,9 +27,6 @@ if (typeof parseAppInfo === 'function')
 
 const standardHeaders = standard.map(o => o['Header Field Name'].toLowerCase());
 
-const hasWindow =
-  typeof window !== 'undefined' && typeof window.document !== 'undefined';
-
 // eslint-disable-next-line import/no-unassigned-import
 require('console-polyfill');
 
@@ -52,7 +49,7 @@ class Axe {
       silent: false,
       logger: console,
       levels: ['info', 'warn', 'error', 'fatal'],
-      capture: env === 'production',
+      capture: process.browser ? false : env === 'production',
       ...config
     };
 
@@ -169,7 +166,7 @@ class Axe {
       // set headers if any
       if (!isEmpty(config.headers)) {
         let { headers } = config;
-        if (hasWindow)
+        if (process.browser)
           headers = Object.keys(config.headers).reduce((memo, header) => {
             if (
               !includes(standardHeaders, config.headers[header].toLowerCase())

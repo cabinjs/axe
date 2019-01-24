@@ -201,8 +201,7 @@ const pino = require('pino')();
 
 const isProduction = process.env.NODE_ENV === 'production';
 const logger = new Axe({
-  logger: isProduction ? pino : consola,
-  capture: false
+  logger: isProduction ? pino : consola
 });
 
 logger.info('hello world');
@@ -249,7 +248,7 @@ Please see Cabin's documentation for [stack traces and error handling](https://g
 * `silent` (Boolean) - defaults to `false`, whether or not to suppress log output to console
 * `logger` (Object) - defaults to `console` (with [console-polyfill][] added automatically), but you may wish to use a [custom logger](#custom-logger)
 * `levels` (Array) - an Array of levels to capture (defaults to `[ 'info', 'warn', 'error', 'fatal' ]`
-* `capture` (Boolean) - defaults to `false` in non-production environments, whether or not to `POST` logs to the `endpoint` (takes into consideration the `config.levels` to only send valid capture levels)
+* `capture` (Boolean) - defaults to `false` in browser (all environments) and server-side (non-production only) environments, whether or not to `POST` logs to the `endpoint` (takes into consideration the `config.levels` to only send valid capture levels)
 
 
 ## Aliases

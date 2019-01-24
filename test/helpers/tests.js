@@ -78,12 +78,14 @@ module.exports = (test, logger = console) => {
         )
       );
       t.context.axe.config.showMeta = false;
+      t.context.axe[level](message, meta);
+      t.true(t.context[map[level]].calledWith(message));
+      t.context.axe.config.showMeta = true;
     });
   });
 
   levels.forEach(level => {
     test(`${name} level ${level} works with Error as first argument`, t => {
-      t.context.axe.config.showStack = true;
       const err = new Error(`test ${level} error`);
       t.context.axe[level](err);
       if (level === 'log') level = 'error';
@@ -97,7 +99,6 @@ module.exports = (test, logger = console) => {
           )
         );
       else t.true(t.context[map[level]].calledWithMatch(err.message));
-      t.context.axe.config.showStack = false;
     });
   });
 
