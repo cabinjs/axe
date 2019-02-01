@@ -179,6 +179,7 @@ class Axe {
 
       req
         .retry(config.retry)
+        .type('application/json')
         .send(body)
         .end(err => {
           if (err) {
