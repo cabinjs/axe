@@ -14,17 +14,13 @@ const isEmpty = require('lodash/isEmpty');
 const isPlainObject = require('lodash/isPlainObject');
 const isUndefined = require('lodash/isUndefined');
 const isNull = require('lodash/isNull');
+const isFunction = require('lodash/isFunction');
 const boolean = require('boolean');
 const { standard } = require('message-headers');
 const formatSpecifiers = require('format-specifiers');
 const parseAppInfo = require('parse-app-info');
 
-let appInfo;
-if (typeof parseAppInfo === 'function')
-  parseAppInfo().then(app => {
-    appInfo = app;
-  });
-
+const appInfo = isFunction(parseAppInfo) ? parseAppInfo() : false;
 const standardHeaders = standard.map(o => o['Header Field Name'].toLowerCase());
 
 // eslint-disable-next-line import/no-unassigned-import
