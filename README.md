@@ -354,9 +354,9 @@ This is just an example of using the `callback` option to send a message to Slac
          icon_emoji: ':evergreen_tree:',
          attachments: [
            {
-             title: meta.err.message,
+             title: meta.err && meta.err.message ? meta.err.message : message,
              color: 'danger',
-             text: meta.err.stack,
+             text: meta.err && meta.err.stack ? meta.err.stack : null,
              fields: [
                {
                  title: 'Level',
@@ -365,12 +365,12 @@ This is just an example of using the `callback` option to send a message to Slac
                },
                {
                  title: 'Environment',
-                 value: meta.level.environment,
+                 value: meta.app.environment,
                  short: true
                },
                {
                  title: 'Hostname',
-                 value: meta.level.hostname,
+                 value: meta.app.hostname,
                  short: true
                },
                {
