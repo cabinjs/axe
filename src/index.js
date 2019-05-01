@@ -163,7 +163,9 @@ class Axe {
     }
 
     // omit `callback` from `meta` if it was passed
-    const callback = isBoolean(meta.callback) && !callback;
+    const callback =
+      isFunction(config.callback) &&
+      (!isBoolean(meta.callback) || meta.callback);
     meta = omit(meta, ['callback']);
 
     // set default level on meta
@@ -224,8 +226,7 @@ class Axe {
     }
 
     // custom callback function (e.g. Slack message)
-    if (isFunction(config.callback) && callback)
-      config.callback(level, message, meta);
+    if (callback) config.callback(level, message, meta);
 
     // suppress logs if it was silent
     if (config.silent) return body;
