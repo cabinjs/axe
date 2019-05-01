@@ -14,10 +14,11 @@
 
 * [Install](#install)
   * [Node](#node)
+* [Usage](#usage)
   * [Browser](#browser)
 * [Approach](#approach)
 * [Application Information](#application-information)
-* [Usage](#usage)
+* [Usage](#usage-1)
   * [Basic](#basic)
   * [Custom logger](#custom-logger)
   * [Custom endpoint](#custom-endpoint)
@@ -25,6 +26,8 @@
   * [Stack Traces and Error Handling](#stack-traces-and-error-handling)
 * [Options](#options)
 * [Aliases](#aliases)
+* [Methods](#methods)
+* [Send Logs To Slack](#send-logs-to-slack)
 * [Contributors](#contributors)
 * [Trademark Notice](#trademark-notice)
 * [License](#license)
@@ -46,11 +49,17 @@ npm install axe
 yarn add axe
 ```
 
+
+## Usage
+
+We highly recommend to simply use [Cabin][] as this package is built-in!
+
 ### Browser
 
 #### VanillaJS
 
 ```html
+<script src="https://polyfill.io/v3/polyfill.min.js?features=Map%2CMap.prototype%2CMath.sign%2CPromise%2CReflect%2CSymbol%2CSymbol.iterator%2CSymbol.prototype%2CSymbol.toPrimitive%2CSymbol.toStringTag%2CUint32Array%2Cwindow.crypto"></script>
 <script src="https://unpkg.com/axe"></script>
 <script type="text/javascript">
   (function() {
@@ -59,6 +68,27 @@ yarn add axe
   });
 </script>
 ```
+
+#### Required Browser Features
+
+We recommend using <https://polyfill.io> (specifically with the bundle mentioned in [VanillaJS](#vanillajs) above):
+
+```html
+<script src="https://polyfill.io/v3/polyfill.min.js?features=Map%2CMap.prototype%2CMath.sign%2CPromise%2CReflect%2CSymbol%2CSymbol.iterator%2CSymbol.prototype%2CSymbol.toPrimitive%2CSymbol.toStringTag%2CUint32Array%2Cwindow.crypto"></script>
+```
+
+* Map is not supported in IE 10
+* Map.prototype() is not supported in IE 10
+* Math.sign() is not supported in IE 10
+* Promise is not supported in Opera Mobile 12.1, Opera Mini all, IE Mobile 10, IE 10, Blackberry Browser 7
+* Reflect is not supported in IE 10
+* Symbol is not supported in IE 10
+* Symbol.iterator() is not supported in IE 10
+* Symbol.prototype() is not supported in IE 10
+* Symbol.toPrimitive() is not supported in IE 10
+* Symbol.toStringTag() is not supported in IE 10
+* Uint32Array is not supported in IE Mobile 10, IE 10, Blackberry Browser 7
+* window.crypto() is not supported in IE 10
 
 #### Bundler
 
@@ -247,13 +277,121 @@ Please see Cabin's documentation for [stack traces and error handling](https://g
 * `showMeta` (Boolean) - defaults to `true` (attempts to parse a boolean value from `process.env.SHOW_META` – meaning you can pass a flag `SHOW_META=true node app.js` when needed for debugging), whether or not to output metadata to logger methods
 * `silent` (Boolean) - defaults to `false`, whether or not to suppress log output to console
 * `logger` (Object) - defaults to `console` (with [console-polyfill][] added automatically), but you may wish to use a [custom logger](#custom-logger)
-* `levels` (Array) - an Array of levels to capture (defaults to `[ 'info', 'warn', 'error', 'fatal' ]`
-* `capture` (Boolean) - defaults to `false` in browser (all environments) and server-side (non-production only) environments, whether or not to `POST` logs to the `endpoint` (takes into consideration the `config.levels` to only send valid capture levels)
+* `name` (String) - the default name for the logger (defaults to `false`, which does not set `logger.name`).  If you wish to pass a name such as `os.hostname()`, then set `name: os.hostname()` – this is useful if you are using a logger like `pino` which prefixes log output with the name set here.
+* `level` (String) - the default level of logging to capture (defaults to `info`, which includes all logs including info and higher in severity (e.g. `info`, `warn`, `error`, `fatal`)
+* `capture` (Boolean) - defaults to `false` in browser (all environments) and server-side (non-production only) environments, whether or not to `POST` logs to the `endpoint` (takes into consideration the `config.level` to only send valid capture levels
+* `callback` (Function) - defaults to `false`, but if it is a `Function`, then it will be called with `callback(level, message, meta)` – this is super useful for [sending messages to Slack when errors occur (see below)](#send-logs-to-slack).  Note that if you specify `{ callback: false }` in the meta object when logging, it will prevent the callback function from being invoked (e.g. `axe.error(new Error('Slack callback failed'), { callback: false })` ‐ see below example).  The `callback` property is always purged from `meta` object for sanity.
 
 
 ## Aliases
 
 We have provided helper/safety aliases for `logger.warn` and `logger.error` of `logger.warning` and `logger.err` respectively.
+
+
+## Methods
+
+Two extra methods are available, which were inspired by [Slack's logger][slack-logger] and added for compatibility:
+
+* `axe.setLevel(level)` - sets the log `level` (String) severity to capture (must be valid enumerable level)
+* `axe.setName(name)` - sets the `name` (String) property (some loggers like `pino` will prefix logs with the name set here)
+
+
+## Send Logs To Slack
+
+This is just an example of using the `callback` option to send a message to Slack with errors that occur in your application:
+
+1. You will need to install the `@slack/web-api` package locally:
+
+   ```sh
+   npm install @slack/web-api
+   ```
+
+2. Create and copy to your clipboard a new Slack bot token at <https://my.slack.com/services/new/bot>.
+
+3. Implementation example is provided below:
+
+   > Replace `INSERT-YOUR-TOKEN` with the token in your clipboard
+
+   ```js
+   const os = require('os');
+   const Axe = require('axe');
+   const { WebClient } = require('@slack/web-api');
+   const signale = require('signale');
+   const pino = require('pino')();
+
+   const isProduction = process.env.NODE_ENV === 'production';
+
+   const config = {
+     logger: isProduction ? pino : signale,
+     level: isProduction ? 'warn' : 'info',
+     name: process.env.HOSTNAME || os.hostname()
+   };
+
+   // custom logger for Slack that inherits our Axe config
+   // (with the exception of a `callback` function for logging to Slack)
+   const slackLogger = new Axe(config);
+
+   // create an instance of the Slack Web Client API for posting messages
+   const web = new WebClient('INSERT-YOUR-TOKEN', {
+     // <https://slack.dev/node-slack-sdk/web-api#logging>
+     logger: slackLogger,
+     logLevel: config.level
+   });
+
+   // create our application logger that uses a custom callback function
+   const axe = new Axe({
+     ...config,
+     callback: async (level, message, meta) => {
+       try {
+         // if it was not an error then return early
+         if (!['error','fatal'].includes(level)) return;
+
+         // otherwise post a message to the slack channel
+         const result = await web.chat.postMessage({
+           channel: 'general',
+           username: 'Cabin',
+           icon_emoji: ':evergreen_tree:',
+           attachments: [
+             {
+               title: meta.err.message,
+               color: 'danger',
+               text: meta.err.stack,
+               fields: [
+                 {
+                   title: 'Level',
+                   value: meta.level,
+                   short: true
+                 },
+                 {
+                   title: 'Environment',
+                   value: meta.level.environment,
+                   short: true
+                 },
+                 {
+                   title: 'Hostname',
+                   value: meta.level.hostname,
+                   short: true
+                 },
+                 {
+                   title: 'Hash',
+                   value: meta.app.hash,
+                   short: true
+                 }
+               ]
+             }
+           ]
+         });
+
+         // finally log the result from slack
+         axe.info('web.chat.postMessage', { result, callback: false });
+       } catch (err) {
+         axe.error(err, { callback: false });
+       }
+     }
+   });
+
+   axe.error(new Error('Uh oh something went wrong!'));
+   ```
 
 
 ## Contributors
@@ -311,3 +449,5 @@ If you are seeking permission to use these trademarks, then please [contact us](
 [log4j]: https://en.wikipedia.org/wiki/Log4
 
 [parse-app-info]: https://github.com/cabinjs/parse-app-info
+
+[slack-logger]: https://github.com/slackapi/node-slack-sdk/tree/master/packages/logger

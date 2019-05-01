@@ -36,8 +36,14 @@ module.exports = (test, logger = console) => {
     t.true(t.context.axe.config.logger === logger);
   });
 
-  test(`${name} returns array of levels`, t => {
+  test(`${name} returns a set level of trace`, t => {
+    t.is(t.context.axe.config.level, 'trace');
+  });
+
+  test(`${name} returns a set array of levels`, t => {
     t.deepEqual(t.context.axe.config.levels, [
+      'trace',
+      'debug',
       'info',
       'warn',
       'error',

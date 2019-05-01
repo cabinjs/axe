@@ -1,5 +1,5 @@
 const format = require('util-format-x');
-const superagent = require('@ladjs/superagent');
+const superagent = require('superagent');
 const cuid = require('cuid');
 const parseErr = require('parse-err');
 const safeStringify = require('fast-safe-stringify');
@@ -8,7 +8,7 @@ const safeStringify = require('fast-safe-stringify');
 const isError = require('lodash/isError');
 const isObject = require('lodash/isObject');
 const isString = require('lodash/isString');
-const includes = require('lodash/includes');
+const isBoolean = require('lodash/isBoolean');
 const omit = require('lodash/omit');
 const isEmpty = require('lodash/isEmpty');
 const isPlainObject = require('lodash/isPlainObject');
@@ -29,6 +29,7 @@ require('console-polyfill');
 const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
 const endpoint = 'https://api.cabinjs.com';
 const env = process.env.NODE_ENV || 'development';
+const levelError = `\`level\` invalid, must be: ${levels.join(', ')}`;
 
 class Axe {
   constructor(config = {}) {
@@ -44,15 +45,26 @@ class Axe {
       showMeta: process.env.SHOW_META ? boolean(process.env.SHOW_META) : true,
       silent: false,
       logger: console,
+      name: false,
+      level: 'info',
       levels: ['info', 'warn', 'error', 'fatal'],
       capture: process.browser ? false : env === 'production',
+      callback: false,
       ...config
     };
 
     Object.assign(this, omit(this.config.logger, ['config', 'log']));
 
     // we could have used `auto-bind` but it's not compiled for browser
+    this.setLevel = this.setLevel.bind(this);
+    this.setName = this.setName.bind(this);
     this.log = this.log.bind(this);
+
+    // set the logger name
+    if (this.config.name) this.setName(this.config.name);
+
+    // set the logger level
+    this.setLevel(this.config.level);
 
     // bind helper functions for each log level
     levels.forEach(level => {
@@ -63,6 +75,25 @@ class Axe {
     // aliases
     this.err = this.error;
     this.warning = this.warn;
+  }
+
+  setLevel(level) {
+    if (!isString(level) || !levels.includes(level))
+      throw new Error(levelError);
+    // support signale logger and other loggers that use `logLevel`
+    if (isString(this.config.logger.logLevel))
+      this.config.logger.logLevel = level;
+    else this.config.logger.level = level;
+    // adjusts `this.config.levels` array
+    // so that it has all proceeding (inclusive)
+    this.config.levels = levels.slice(levels.indexOf(level));
+  }
+
+  setName(name) {
+    if (!isString(name)) throw new Error('`name` must be a String');
+    // support signale logger and other loggers that use `scope`
+    if (isString(this.config.logger.scope)) this.config.logger.scope = name;
+    else this.config.logger.name = name;
   }
 
   // eslint-disable-next-line complexity
@@ -80,7 +111,7 @@ class Axe {
       meta = message;
       message = level;
       level = 'error';
-    } else if (!isString(level) || !includes(levels, level)) {
+    } else if (!isString(level) || !levels.includes(level)) {
       meta = message;
       message = level;
       level = 'info';
@@ -95,7 +126,7 @@ class Axe {
     } else if (
       originalArgs.length === 3 + modifier &&
       isString(message) &&
-      formatSpecifiers.some(t => includes(message, t))
+      formatSpecifiers.some(t => message.includes(t))
     ) {
       // otherwise if there are three args and if the `message` contains
       // a placeholder token (e.g. '%s' or '%d' - see above `formatSpecifiers` variable)
@@ -126,6 +157,10 @@ class Axe {
       ({ message } = message);
     }
 
+    // omit `callback` from `meta` if it was passed
+    const callback = isBoolean(meta.callback) && !callback;
+    meta = omit(meta, ['callback']);
+
     // set default level on meta
     meta.level = level;
 
@@ -139,7 +174,7 @@ class Axe {
     // send to Cabin or other logging service here the `message` and `meta`
     if (
       config.capture &&
-      includes(config.levels, level) &&
+      config.levels.includes(level) &&
       (!isError(err) || !err._captureFailed)
     ) {
       // if the user didn't specify a key
@@ -164,9 +199,7 @@ class Axe {
         let { headers } = config;
         if (process.browser)
           headers = Object.keys(config.headers).reduce((memo, header) => {
-            if (
-              !includes(standardHeaders, config.headers[header].toLowerCase())
-            )
+            if (!standardHeaders.includes(config.headers[header].toLowerCase()))
               memo[header] = config.headers[header];
             return memo;
           }, {});
@@ -185,28 +218,40 @@ class Axe {
         });
     }
 
-    // Suppress logs if it was silent
+    // custom callback function (e.g. Slack message)
+    if (isFunction(config.callback) && callback)
+      config.callback(level, message, meta);
+
+    // suppress logs if it was silent
     if (config.silent) return body;
+
+    // return early if it is not a valid logging level
+    if (!config.levels.includes(level)) return body;
+
+    //
+    // determine log method to use
+    //
+    // if we didn't pass a level as a method
+    // (e.g. console.info), then we should still
+    // use the logger's `log` method to output
+    //
+    // and fatal should use error (e.g. in browser)
+    //
+    let method = level;
+    if (modifier === -1) method = 'log';
+    else if (level === 'fatal') method = 'error';
 
     // if there was meta information then output it
     const omitted = omit(meta, ['level', 'err']);
 
-    // fatal should use error (e.g. in browser)
-    if (level === 'fatal') level = 'error';
-
-    // if we didn't pass a level as a method
-    // (e.g. console.info), then we should still
-    // use the logger's `log` method to output
-    if (modifier === -1) level = 'log';
-
     // show stack trace if necessary (along with any metadata)
-    if (level === 'error' && isError(err) && config.showStack) {
+    if (method === 'error' && isError(err) && config.showStack) {
       if (!config.showMeta || isEmpty(omitted)) this.config.logger.error(err);
       else this.config.logger.error(err, omitted);
     } else if (!config.showMeta || isEmpty(omitted)) {
-      this.config.logger[level](message);
+      this.config.logger[method](message);
     } else {
-      this.config.logger[level](message, omitted);
+      this.config.logger[method](message, omitted);
     }
 
     // return the parsed body in case we need it
