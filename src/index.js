@@ -58,6 +58,7 @@ class Axe {
     // we could have used `auto-bind` but it's not compiled for browser
     this.setLevel = this.setLevel.bind(this);
     this.setName = this.setName.bind(this);
+    this.setCallback = this.setCallback.bind(this);
     this.log = this.log.bind(this);
 
     // set the logger name
@@ -75,6 +76,10 @@ class Axe {
     // aliases
     this.err = this.error;
     this.warning = this.warn;
+  }
+
+  setCallback(callback) {
+    this.config.callback = callback;
   }
 
   setLevel(level) {

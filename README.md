@@ -294,6 +294,7 @@ Two extra methods are available, which were inspired by [Slack's logger][slack-l
 
 * `axe.setLevel(level)` - sets the log `level` (String) severity to capture (must be valid enumerable level)
 * `axe.setName(name)` - sets the `name` (String) property (some loggers like `pino` will prefix logs with the name set here)
+* `axe.setCallback(callback)` - sets the `callback` (Function) property (see `callback` option above and [Slack example below](#send-logs-to-slack)
 
 
 ## Send Logs To Slack
