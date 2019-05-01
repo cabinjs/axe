@@ -340,54 +340,53 @@ This is just an example of using the `callback` option to send a message to Slac
    });
 
    // create our application logger that uses a custom callback function
-   const axe = new Axe({
-     ...config,
-     callback: async (level, message, meta) => {
-       try {
-         // if it was not an error then return early
-         if (!['error','fatal'].includes(level)) return;
+   const axe = new Axe({ ...config });
 
-         // otherwise post a message to the slack channel
-         const result = await web.chat.postMessage({
-           channel: 'general',
-           username: 'Cabin',
-           icon_emoji: ':evergreen_tree:',
-           attachments: [
-             {
-               title: meta.err.message,
-               color: 'danger',
-               text: meta.err.stack,
-               fields: [
-                 {
-                   title: 'Level',
-                   value: meta.level,
-                   short: true
-                 },
-                 {
-                   title: 'Environment',
-                   value: meta.level.environment,
-                   short: true
-                 },
-                 {
-                   title: 'Hostname',
-                   value: meta.level.hostname,
-                   short: true
-                 },
-                 {
-                   title: 'Hash',
-                   value: meta.app.hash,
-                   short: true
-                 }
-               ]
-             }
-           ]
-         });
+   axe.setCallback(async (level, message, meta) => {
+     try {
+       // if it was not an error then return early
+       if (!['error','fatal'].includes(level)) return;
 
-         // finally log the result from slack
-         axe.info('web.chat.postMessage', { result, callback: false });
-       } catch (err) {
-         axe.error(err, { callback: false });
-       }
+       // otherwise post a message to the slack channel
+       const result = await web.chat.postMessage({
+         channel: 'general',
+         username: 'Cabin',
+         icon_emoji: ':evergreen_tree:',
+         attachments: [
+           {
+             title: meta.err.message,
+             color: 'danger',
+             text: meta.err.stack,
+             fields: [
+               {
+                 title: 'Level',
+                 value: meta.level,
+                 short: true
+               },
+               {
+                 title: 'Environment',
+                 value: meta.level.environment,
+                 short: true
+               },
+               {
+                 title: 'Hostname',
+                 value: meta.level.hostname,
+                 short: true
+               },
+               {
+                 title: 'Hash',
+                 value: meta.app.hash,
+                 short: true
+               }
+             ]
+           }
+         ]
+       });
+
+       // finally log the result from slack
+       axe.info('web.chat.postMessage', { result, callback: false });
+     } catch (err) {
+       axe.error(err, { callback: false });
      }
    });
 
@@ -415,7 +414,7 @@ If you are seeking permission to use these trademarks, then please [contact us](
 [MIT](LICENSE) © [Nick Baugh](http://niftylettuce.com)
 
 
-## 
+##
 
 [npm]: https://www.npmjs.com/
 
