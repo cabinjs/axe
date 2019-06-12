@@ -7,7 +7,7 @@
 [![made with lass](https://img.shields.io/badge/made_with-lass-95CC28.svg)](https://github.com/lassjs/lass)
 [![license](https://img.shields.io/github/license/cabinjs/axe.svg)](LICENSE)
 
-> Logging add-on to send logs over HTTP to your server in Node and Browser environments. Works with any logger! Chop up your logs consistently! Made for [Cabin][] and [Lad][].
+> Logging add-on to send logs over HTTP to your server in Node and Browser environments. Works with any logger! Chop up your logs consistently! Made for [Cabin][].
 
 
 ## Table of Contents
@@ -58,8 +58,10 @@ We highly recommend to simply use [Cabin][] as this package is built-in!
 
 #### VanillaJS
 
+**The browser-ready bundle is only 38 KB (minified and gzipped)**.
+
 ```html
-<script src="https://polyfill.io/v3/polyfill.min.js?features=Map%2CMap.prototype%2CMath.sign%2CPromise%2CReflect%2CSymbol%2CSymbol.iterator%2CSymbol.prototype%2CSymbol.toPrimitive%2CSymbol.toStringTag%2CUint32Array%2Cwindow.crypto"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto"></script>
 <script src="https://unpkg.com/axe"></script>
 <script type="text/javascript">
   (function() {
@@ -74,7 +76,7 @@ We highly recommend to simply use [Cabin][] as this package is built-in!
 We recommend using <https://polyfill.io> (specifically with the bundle mentioned in [VanillaJS](#vanillajs) above):
 
 ```html
-<script src="https://polyfill.io/v3/polyfill.min.js?features=Map%2CMap.prototype%2CMath.sign%2CPromise%2CReflect%2CSymbol%2CSymbol.iterator%2CSymbol.prototype%2CSymbol.toPrimitive%2CSymbol.toStringTag%2CUint32Array%2Cwindow.crypto"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto"></script>
 ```
 
 * Map is not supported in IE 10

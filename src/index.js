@@ -1,35 +1,59 @@
-const format = require('util-format-x');
-const superagent = require('superagent');
-const cuid = require('cuid');
-const parseErr = require('parse-err');
-const safeStringify = require('fast-safe-stringify');
-// <https://lacke.mn/reduce-your-bundle-js-file-size/>
-// <https://github.com/lodash/babel-plugin-lodash/issues/221>
-const isError = require('lodash/isError');
-const isObject = require('lodash/isObject');
-const isString = require('lodash/isString');
-const isBoolean = require('lodash/isBoolean');
-const omit = require('lodash/omit');
-const isEmpty = require('lodash/isEmpty');
-const isPlainObject = require('lodash/isPlainObject');
-const isUndefined = require('lodash/isUndefined');
-const isNull = require('lodash/isNull');
-const isFunction = require('lodash/isFunction');
-const boolean = require('boolean');
-const { standard } = require('message-headers');
-const formatSpecifiers = require('format-specifiers');
-const parseAppInfo = require('parse-app-info');
-
-const appInfo = isFunction(parseAppInfo) ? parseAppInfo() : false;
-const standardHeaders = standard.map(o => o['Header Field Name'].toLowerCase());
-
 // eslint-disable-next-line import/no-unassigned-import
 require('console-polyfill');
 
+const boolean = require('boolean');
+const cuid = require('cuid');
+const format = require('util-format-x');
+const formatSpecifiers = require('format-specifiers');
+const isError = require('iserror');
+const omit = require('object.omit');
+const parseAppInfo = require('parse-app-info');
+const parseErr = require('parse-err');
+const safeStringify = require('fast-safe-stringify');
+const superagent = require('superagent');
+const { standard } = require('message-headers');
+
+const omittedLoggerKeys = ['config', 'log'];
+const appInfo = isFunction(parseAppInfo) ? parseAppInfo() : false;
+const standardHeaders = standard.map(o => o['Header Field Name'].toLowerCase());
 const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
 const endpoint = 'https://api.cabinjs.com';
 const env = process.env.NODE_ENV || 'development';
 const levelError = `\`level\` invalid, must be: ${levels.join(', ')}`;
+
+// <https://stackoverflow.com/a/43233163>
+function isEmpty(value) {
+  return (
+    value === undefined ||
+    value === null ||
+    (typeof value === 'object' && Object.keys(value).length === 0) ||
+    (typeof value === 'string' && value.trim().length === 0)
+  );
+}
+
+function isNull(val) {
+  return val === null;
+}
+
+function isUndefined(val) {
+  return typeof val === 'undefined';
+}
+
+function isObject(val) {
+  return typeof val === 'object' && !Array.isArray(val);
+}
+
+function isString(val) {
+  return typeof val === 'string';
+}
+
+function isFunction(val) {
+  return typeof val === 'function';
+}
+
+function isBoolean(val) {
+  return typeof val === 'boolean';
+}
 
 class Axe {
   constructor(config = {}) {
@@ -53,25 +77,32 @@ class Axe {
       ...config
     };
 
-    Object.assign(this, omit(this.config.logger, ['config', 'log']));
+    this.log = this.log.bind(this);
+
+    // inherit methods from parent logger
+    const methods = Object.keys(this.config.logger).filter(
+      key => omittedLoggerKeys.indexOf(key) === -1
+    );
+    for (let i = 0; i < methods.length; i++) {
+      this[methods[i]] = this.config.logger[methods[i]];
+    }
+
+    // bind helper functions for each log level
+    for (let i = 0; i < levels.length; i++) {
+      this[levels[i]] = (...args) =>
+        this.log(...[levels[i]].concat([].slice.call(args)));
+    }
 
     // we could have used `auto-bind` but it's not compiled for browser
     this.setLevel = this.setLevel.bind(this);
     this.setName = this.setName.bind(this);
     this.setCallback = this.setCallback.bind(this);
-    this.log = this.log.bind(this);
 
     // set the logger name
     if (this.config.name) this.setName(this.config.name);
 
     // set the logger level
     this.setLevel(this.config.level);
-
-    // bind helper functions for each log level
-    levels.forEach(level => {
-      this[level] = (...args) =>
-        this.log(...[level].concat([].slice.call(args)));
-    });
 
     // aliases
     this.err = this.error;
@@ -83,7 +114,7 @@ class Axe {
   }
 
   setLevel(level) {
-    if (!isString(level) || !levels.includes(level))
+    if (!isString(level) || levels.indexOf(level) === -1)
       throw new Error(levelError);
     // support signale logger and other loggers that use `logLevel`
     if (isString(this.config.logger.logLevel))
@@ -116,7 +147,7 @@ class Axe {
       meta = message;
       message = level;
       level = 'error';
-    } else if (!isString(level) || !levels.includes(level)) {
+    } else if (!isString(level) || levels.indexOf(level) === -1) {
       meta = message;
       message = level;
       level = 'info';
@@ -131,7 +162,7 @@ class Axe {
     } else if (
       originalArgs.length === 3 + modifier &&
       isString(message) &&
-      formatSpecifiers.some(t => message.includes(t))
+      formatSpecifiers.filter(t => message.indexOf(t) !== -1).length > 0
     ) {
       // otherwise if there are three args and if the `message` contains
       // a placeholder token (e.g. '%s' or '%d' - see above `formatSpecifiers` variable)
@@ -141,7 +172,8 @@ class Axe {
     } else if (!isError(message)) {
       if (isError(meta)) {
         meta = { err: parseErr(meta) };
-      } else if (!isPlainObject(meta) && !isUndefined(meta) && !isNull(meta)) {
+        // } else if (!isPlainObject(meta) && !isUndefined(meta) && !isNull(meta)) {
+      } else if (!isObject(meta) && !isUndefined(meta) && !isNull(meta)) {
         // if the `meta` variable passed was not an Object then convert it
         message = format(message, meta);
         meta = {};
@@ -153,7 +185,8 @@ class Axe {
       }
     }
 
-    if (!isPlainObject(meta)) meta = {};
+    // if (!isPlainObject(meta)) meta = {};
+    if (!isObject(meta)) meta = {};
 
     let err;
     if (isError(message)) {
@@ -181,7 +214,7 @@ class Axe {
     // send to Cabin or other logging service here the `message` and `meta`
     if (
       config.capture &&
-      config.levels.includes(level) &&
+      config.levels.indexOf(level) !== -1 &&
       (!isError(err) || !err._captureFailed)
     ) {
       // if the user didn't specify a key
@@ -206,7 +239,10 @@ class Axe {
         let { headers } = config;
         if (process.browser)
           headers = Object.keys(config.headers).reduce((memo, header) => {
-            if (!standardHeaders.includes(config.headers[header].toLowerCase()))
+            if (
+              standardHeaders.indexOf(config.headers[header].toLowerCase()) ===
+              -1
+            )
               memo[header] = config.headers[header];
             return memo;
           }, {});
@@ -232,7 +268,7 @@ class Axe {
     if (config.silent) return body;
 
     // return early if it is not a valid logging level
-    if (!config.levels.includes(level)) return body;
+    if (config.levels.indexOf(level) === -1) return body;
 
     //
     // determine log method to use

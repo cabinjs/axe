@@ -4,27 +4,27 @@
     "node": false,
     "browser": true,
     "amd": true,
-    "es6": true
+    "es6": true,
+    "commonjs": true
   },
   "plugins": ["compat"],
   "rules": {
     "compat/compat": "error",
-    "complexity": "off",
-    "max-statements": "off",
+    "no-func-assign": "off",
+    "no-unused-vars": "off",
+    "no-redeclare": "off",
+    "no-empty": "off",
+    "no-fallthrough": "off",
     "no-cond-assign": "off",
-    "no-console": "off",
     "no-constant-condition": "off",
     "no-control-regex": "off",
-    "no-empty": "off",
+    "no-useless-escape": "off",
     "no-extra-semi": "off",
-    "no-fallthrough": "off",
-    "no-func-assign": "off",
-    "no-invalid-this": "off",
-    "no-redeclare": "off",
-    "no-sparse-arrays": "off",
-    "no-undef": "off",
-    "no-unused-vars": "off",
-    "no-useless-escape": "off"
+    "no-console": "off",
+    "no-sparse-arrays": "off"
+  },
+  "globals": {
+    "ActiveXObject": "readonly"
   },
   "settings": {
     "polyfills": [
