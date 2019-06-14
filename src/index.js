@@ -40,7 +40,7 @@ function isUndefined(val) {
 }
 
 function isObject(val) {
-  return typeof val === 'object' && !Array.isArray(val);
+  return typeof val === 'object' && val !== null && !Array.isArray(val);
 }
 
 function isString(val) {
