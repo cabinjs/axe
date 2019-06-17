@@ -13,6 +13,8 @@ const safeStringify = require('fast-safe-stringify');
 const superagent = require('superagent');
 const { standard } = require('message-headers');
 
+const pkg = require('../package.json');
+
 const omittedLoggerKeys = ['config', 'log'];
 const appInfo = isFunction(parseAppInfo) ? parseAppInfo() : false;
 const standardHeaders = standard.map(o => o['Header Field Name'].toLowerCase());
@@ -228,6 +230,7 @@ class Axe {
       // capture the log over HTTP
       const req = superagent
         .post(config.endpoint)
+        .set('User-Agent', `axe/${pkg.version}`)
         .set('X-Request-Id', cuid())
         .timeout(config.timeout);
 
