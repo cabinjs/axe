@@ -11,13 +11,11 @@ const parseAppInfo = require('parse-app-info');
 const parseErr = require('parse-err');
 const safeStringify = require('fast-safe-stringify');
 const superagent = require('superagent');
-const { standard } = require('message-headers');
 
 const pkg = require('../package.json');
 
 const omittedLoggerKeys = ['config', 'log'];
 const appInfo = isFunction(parseAppInfo) ? parseAppInfo() : false;
-const standardHeaders = standard.map(o => o['Header Field Name'].toLowerCase());
 const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
 const endpoint = 'https://api.cabinjs.com';
 const env = process.env.NODE_ENV || 'development';
@@ -238,19 +236,7 @@ class Axe {
       if (config.key) req.auth(config.key);
 
       // set headers if any
-      if (!isEmpty(config.headers)) {
-        let { headers } = config;
-        if (process.browser)
-          headers = Object.keys(config.headers).reduce((memo, header) => {
-            if (
-              standardHeaders.indexOf(config.headers[header].toLowerCase()) ===
-              -1
-            )
-              memo[header] = config.headers[header];
-            return memo;
-          }, {});
-        req.set(headers);
-      }
+      if (!isEmpty(config.headers)) req.set(config.headers);
 
       req
         .retry(config.retry)

@@ -32,7 +32,6 @@
     "fast-safe-stringify": "^2.0.6",
     "format-specifiers": "^1.0.0",
     "iserror": "^0.0.2",
-    "message-headers": "^1.0.1",
     "object.omit": "^3.0.0",
     "parse-app-info": "^2.0.3",
     "parse-err": "^0.0.9",

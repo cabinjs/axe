@@ -58,7 +58,7 @@ We highly recommend to simply use [Cabin][] as this package is built-in!
 
 #### VanillaJS
 
-**The browser-ready bundle is only 38 KB (minified and gzipped)**.
+**The browser-ready bundle is only 36 KB (minified and gzipped)**.
 
 ```html
 <script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto"></script>

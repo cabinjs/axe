@@ -6831,11 +6831,6 @@ merge2@^1.2.3:
   resolved "https://registry.yarnpkg.com/merge2/-/merge2-1.2.3.tgz#7ee99dbd69bb6481689253f018488a1b902b0ed5"
   integrity sha512-gdUU1Fwj5ep4kplwcmftruWofEFt6lfpkkr3h860CXbAB9c3hGb55EOL2ali0Td5oebvW0E1+3Sr+Ur7XfKpRA==
 
-message-headers@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/message-headers/-/message-headers-1.0.1.tgz#cf29632417f1492fe66464e38bc572e344481a1d"
-  integrity sha512-maHLza/Osh+QiOSAmmz+ubQyxXvJIrehl/4d03FcZhiFbXP5xcOYMZplY3zR3AqdKF3z6cec+SChl80okn6I3Q==
-
 methods@^1.1.2, methods@~1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/methods/-/methods-1.1.2.tgz#5529a4d67654134edcc5266656835b0f851afcee"
