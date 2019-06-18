@@ -228,9 +228,10 @@ class Axe {
       // capture the log over HTTP
       const req = superagent
         .post(config.endpoint)
-        .set('User-Agent', `axe/${pkg.version}`)
         .set('X-Request-Id', cuid())
         .timeout(config.timeout);
+
+      if (!process.browser) req.set('User-Agent', `axe/${pkg.version}`);
 
       // basic auth (e.g. Cabin API key)
       if (config.key) req.auth(config.key);
