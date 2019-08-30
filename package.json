@@ -1,7 +1,7 @@
 {
   "name": "axe",
   "description": "Logging add-on to send logs over HTTP to your server in Node and Browser environments. Works with any logger! Chop up your logs consistently! Made for Cabin and Lad.",
-  "version": "3.1.9",
+  "version": "4.0.0",
   "author": "Nick Baugh <niftylettuce@gmail.com> (http://niftylettuce.com)",
   "ava": {
     "serial": true,
