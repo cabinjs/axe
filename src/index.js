@@ -57,25 +57,27 @@ function isBoolean(val) {
 
 class Axe {
   constructor(config = {}) {
-    this.config = {
-      key: '',
-      endpoint,
-      headers: {},
-      timeout: 5000,
-      retry: 3,
-      showStack: process.env.SHOW_STACK
-        ? boolean(process.env.SHOW_STACK)
-        : true,
-      showMeta: process.env.SHOW_META ? boolean(process.env.SHOW_META) : true,
-      silent: false,
-      logger: console,
-      name: false,
-      level: 'info',
-      levels: ['info', 'warn', 'error', 'fatal'],
-      capture: process.browser ? false : env === 'production',
-      callback: false,
-      ...config
-    };
+    this.config = Object.assign(
+      {
+        key: '',
+        endpoint,
+        headers: {},
+        timeout: 5000,
+        retry: 3,
+        showStack: process.env.SHOW_STACK
+          ? boolean(process.env.SHOW_STACK)
+          : true,
+        showMeta: process.env.SHOW_META ? boolean(process.env.SHOW_META) : true,
+        silent: false,
+        logger: console,
+        name: false,
+        level: 'info',
+        levels: ['info', 'warn', 'error', 'fatal'],
+        capture: process.browser ? false : env === 'production',
+        callback: false
+      },
+      config
+    );
 
     this.log = this.log.bind(this);
 

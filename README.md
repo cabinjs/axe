@@ -61,7 +61,7 @@ We highly recommend to simply use [Cabin][] as this package is built-in!
 **The browser-ready bundle is only 37 KB (minified and gzipped)**.
 
 ```html
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto,Object.getOwnPropertyDescriptors,Object.assign,Object.getOwnPropertySymbols,Array.from"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto,Object.assign,Object.getOwnPropertySymbols,Array.from"></script>
 <script src="https://unpkg.com/axe"></script>
 <script type="text/javascript">
   (function() {
@@ -76,7 +76,7 @@ We highly recommend to simply use [Cabin][] as this package is built-in!
 We recommend using <https://polyfill.io> (specifically with the bundle mentioned in [VanillaJS](#vanillajs) above):
 
 ```html
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto,Object.getOwnPropertyDescriptors,Object.assign,Object.getOwnPropertySymbols,Array.from"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto,Object.assign,Object.getOwnPropertySymbols,Array.from"></script>
 ```
 
 * Map is not supported in IE 10
@@ -91,7 +91,6 @@ We recommend using <https://polyfill.io> (specifically with the bundle mentioned
 * Symbol.toStringTag() is not supported in IE 10
 * Uint32Array is not supported in IE Mobile 10, IE 10, Blackberry Browser 7
 * window.crypto() is not supported in IE 10
-* Object.getOwnPropertyDescriptors() is not supported in IE 10
 * Object.assign() is not supported in IE 10
 * Object.getOwnPropertySymbols() is not supported in IE 10
 * Array.from() is not supported in IE 10

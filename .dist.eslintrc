@@ -44,8 +44,7 @@
       "window.crypto",
       "Object.assign",
       "Object.getOwnPropertySymbols",
-      "Array.from",
-      "Object.getOwnPropertyDescriptors"
+      "Array.from"
     ]
   }
 }
