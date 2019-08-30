@@ -58,10 +58,10 @@ We highly recommend to simply use [Cabin][] as this package is built-in!
 
 #### VanillaJS
 
-**The browser-ready bundle is only 36 KB (minified and gzipped)**.
+**The browser-ready bundle is only 37 KB (minified and gzipped)**.
 
 ```html
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto,Object.getOwnPropertyDescriptors,Object.assign,Object.getOwnPropertySymbols,Array.from"></script>
 <script src="https://unpkg.com/axe"></script>
 <script type="text/javascript">
   (function() {
@@ -76,7 +76,7 @@ We highly recommend to simply use [Cabin][] as this package is built-in!
 We recommend using <https://polyfill.io> (specifically with the bundle mentioned in [VanillaJS](#vanillajs) above):
 
 ```html
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto,Object.getOwnPropertyDescriptors,Object.assign,Object.getOwnPropertySymbols,Array.from"></script>
 ```
 
 * Map is not supported in IE 10
@@ -91,6 +91,10 @@ We recommend using <https://polyfill.io> (specifically with the bundle mentioned
 * Symbol.toStringTag() is not supported in IE 10
 * Uint32Array is not supported in IE Mobile 10, IE 10, Blackberry Browser 7
 * window.crypto() is not supported in IE 10
+* Object.getOwnPropertyDescriptors() is not supported in IE 10
+* Object.assign() is not supported in IE 10
+* Object.getOwnPropertySymbols() is not supported in IE 10
+* Array.from() is not supported in IE 10
 
 #### Bundler
 
@@ -158,7 +162,9 @@ Lastly if you were to log `axe.warn('uh oh!', { amount_spent: 50 })`, it will ou
 
 These returned values will be automatically sent to the endpoint (by default to your [Cabin][] account associated with your API key).
 
-You can also use format specifiers thanks to `format-util` and `format-specifiers`.  To view the full list of format specifiers see <https://github.com/nodejs/node/blob/master/doc/api/util.md#utilformatformat-args>.
+You can also use format specifiers in the browser (uses [format-util][] – has limited number of format specifiers) and Node (uses the built-in [util.format][] method – supports all format specifiers).  This feature is built-in thanks to smart detection using [format-specifiers][].
+
+To view the full list of format specifiers see <https://github.com/nodejs/node/blob/master/doc/api/util.md#utilformatformat-args>.  Note that `format-util` only supports
 
 **This consistency among server and browser environments is the beauty of Axe – and when used in combination with [Cabin][], your logs will be beautiful with HTTP request information, user metadata, IP address, User-Agent, and more!**
 
@@ -453,3 +459,9 @@ If you are seeking permission to use these trademarks, then please [contact us](
 [parse-app-info]: https://github.com/cabinjs/parse-app-info
 
 [slack-logger]: https://github.com/slackapi/node-slack-sdk/tree/master/packages/logger
+
+[format-util]: https://github.com/tmpfs/format-util
+
+[util.format]: https://nodejs.org/api/util.html#util_util_format_format_args
+
+[format-specifiers]: https://github.com/niftylettuce/format-specifiers

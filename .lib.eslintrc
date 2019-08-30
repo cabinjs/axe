@@ -11,7 +11,8 @@
       "Array.from",
       "Object.getOwnPropertySymbols",
       "Symbol.iterator",
-      "Symbol.prototype"
+      "Symbol.prototype",
+      "Object.getOwnPropertyDescriptors"
     ]
   }
 }

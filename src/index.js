@@ -3,14 +3,14 @@ require('console-polyfill');
 
 const boolean = require('boolean');
 const cuid = require('cuid');
-const format = require('util-format-x');
 const formatSpecifiers = require('format-specifiers');
 const isError = require('iserror');
-const omit = require('object.omit');
+const omit = require('omit.js');
 const parseAppInfo = require('parse-app-info');
 const parseErr = require('parse-err');
 const safeStringify = require('fast-safe-stringify');
 const superagent = require('superagent');
+const format = require('format-util');
 
 const pkg = require('../package.json');
 

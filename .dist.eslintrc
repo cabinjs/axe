@@ -21,7 +21,9 @@
     "no-useless-escape": "off",
     "no-extra-semi": "off",
     "no-console": "off",
-    "no-sparse-arrays": "off"
+    "no-sparse-arrays": "off",
+    "no-undef": "off",
+    "no-prototype-builtins": "off"
   },
   "globals": {
     "ActiveXObject": "readonly"
@@ -39,7 +41,11 @@
       "Symbol.toPrimitive",
       "Symbol.toStringTag",
       "Uint32Array",
-      "window.crypto"
+      "window.crypto",
+      "Object.assign",
+      "Object.getOwnPropertySymbols",
+      "Array.from",
+      "Object.getOwnPropertyDescriptors"
     ]
   }
 }
