@@ -163,8 +163,6 @@ These returned values will be automatically sent to the endpoint (by default to 
 
 You can also use format specifiers in the browser (uses [format-util][] – has limited number of format specifiers) and Node (uses the built-in [util.format][] method – supports all format specifiers).  This feature is built-in thanks to smart detection using [format-specifiers][].
 
-To view the full list of format specifiers see <https://github.com/nodejs/node/blob/master/doc/api/util.md#utilformatformat-args>.  Note that `format-util` only supports
-
 **This consistency among server and browser environments is the beauty of Axe – and when used in combination with [Cabin][], your logs will be beautiful with HTTP request information, user metadata, IP address, User-Agent, and more!**
 
 
