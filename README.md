@@ -14,12 +14,12 @@
 
 * [Install](#install)
   * [Node](#node)
-* [Usage](#usage)
   * [Browser](#browser)
 * [Approach](#approach)
 * [Application Information](#application-information)
-* [Usage](#usage-1)
-  * [Basic](#basic)
+* [Usage](#usage)
+  * [Node](#node-1)
+  * [Browser](#browser-1)
   * [Custom logger](#custom-logger)
   * [Custom endpoint](#custom-endpoint)
   * [Suppress logs](#suppress-logs)
@@ -49,55 +49,9 @@ npm install axe
 yarn add axe
 ```
 
-
-## Usage
-
-We highly recommend to simply use [Cabin][] as this package is built-in!
-
 ### Browser
 
-#### VanillaJS
-
-**The browser-ready bundle is only 36 KB (minified and gzipped)**.
-
-```html
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto,Object.assign,Object.getOwnPropertySymbols,Array.from"></script>
-<script src="https://unpkg.com/axe"></script>
-<script type="text/javascript">
-  (function() {
-    var Axe = new Axe({ key: 'YOUR-CABIN-API-KEY' });
-    axe.info('hello world');
-  });
-</script>
-```
-
-#### Required Browser Features
-
-We recommend using <https://polyfill.io> (specifically with the bundle mentioned in [VanillaJS](#vanillajs) above):
-
-```html
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto,Object.assign,Object.getOwnPropertySymbols,Array.from"></script>
-```
-
-* Map is not supported in IE 10
-* Map.prototype() is not supported in IE 10
-* Math.sign() is not supported in IE 10
-* Promise is not supported in Opera Mobile 12.1, Opera Mini all, IE Mobile 10, IE 10, Blackberry Browser 7
-* Reflect is not supported in IE 10
-* Symbol is not supported in IE 10
-* Symbol.iterator() is not supported in IE 10
-* Symbol.prototype() is not supported in IE 10
-* Symbol.toPrimitive() is not supported in IE 10
-* Symbol.toStringTag() is not supported in IE 10
-* Uint32Array is not supported in IE Mobile 10, IE 10, Blackberry Browser 7
-* window.crypto() is not supported in IE 10
-* Object.assign() is not supported in IE 10
-* Object.getOwnPropertySymbols() is not supported in IE 10
-* Array.from() is not supported in IE 10
-
-#### Bundler
-
-If you're using something like [browserify][], [webpack][], or [rollup][], then install the package as you would with [Node](#node) above.
+See [Browser](#browser-1) usage below for more information.
 
 
 ## Approach
@@ -191,7 +145,9 @@ Additional properties when the app is in a git repository
 
 ## Usage
 
-### Basic
+We highly recommend to simply use [Cabin][] as this package is built-in!
+
+### Node
 
 ```js
 const Axe = require('axe');
@@ -200,6 +156,51 @@ const axe = new Axe({ key: 'YOUR-CABIN-API-KEY' });
 
 axe.info('hello world');
 ```
+
+### Browser
+
+#### VanillaJS
+
+**The browser-ready bundle is only 36 KB (minified and gzipped)**.
+
+```html
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto,Object.assign,Object.getOwnPropertySymbols,Array.from"></script>
+<script src="https://unpkg.com/axe"></script>
+<script type="text/javascript">
+  (function() {
+    var Axe = new Axe({ key: 'YOUR-CABIN-API-KEY' });
+    axe.info('hello world');
+  });
+</script>
+```
+
+#### Required Browser Features
+
+We recommend using <https://polyfill.io> (specifically with the bundle mentioned in [VanillaJS](#vanillajs) above):
+
+```html
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto,Object.assign,Object.getOwnPropertySymbols,Array.from"></script>
+```
+
+* Map is not supported in IE 10
+* Map.prototype() is not supported in IE 10
+* Math.sign() is not supported in IE 10
+* Promise is not supported in Opera Mobile 12.1, Opera Mini all, IE Mobile 10, IE 10, Blackberry Browser 7
+* Reflect is not supported in IE 10
+* Symbol is not supported in IE 10
+* Symbol.iterator() is not supported in IE 10
+* Symbol.prototype() is not supported in IE 10
+* Symbol.toPrimitive() is not supported in IE 10
+* Symbol.toStringTag() is not supported in IE 10
+* Uint32Array is not supported in IE Mobile 10, IE 10, Blackberry Browser 7
+* window.crypto() is not supported in IE 10
+* Object.assign() is not supported in IE 10
+* Object.getOwnPropertySymbols() is not supported in IE 10
+* Array.from() is not supported in IE 10
+
+#### Bundler
+
+If you're using something like [browserify][], [webpack][], or [rollup][], then install the package as you would with [Node](#node) above.
 
 ### Custom logger
 
@@ -419,7 +420,7 @@ If you are seeking permission to use these trademarks, then please [contact us](
 [MIT](LICENSE) © [Nick Baugh](http://niftylettuce.com)
 
 
-##
+## 
 
 [npm]: https://www.npmjs.com/
 
