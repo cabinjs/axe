@@ -15,7 +15,6 @@ const format = require('format-util');
 const pkg = require('../package.json');
 
 const omittedLoggerKeys = ['config', 'log'];
-const appInfo = isFunction(parseAppInfo) ? parseAppInfo() : false;
 const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
 const endpoint = 'https://api.cabinjs.com';
 const env = process.env.NODE_ENV || 'development';
@@ -74,10 +73,17 @@ class Axe {
         level: 'info',
         levels: ['info', 'warn', 'error', 'fatal'],
         capture: process.browser ? false : env === 'production',
-        callback: false
+        callback: false,
+        appInfo: process.env.APP_INFO ? boolean(process.env.APP_INFO) : true
       },
       config
     );
+
+    this.appInfo = this.config.appInfo
+      ? isFunction(parseAppInfo)
+        ? parseAppInfo()
+        : false
+      : false;
 
     this.log = this.log.bind(this);
 
@@ -207,7 +213,7 @@ class Axe {
     meta.level = level;
 
     // add `app` object to metadata
-    if (appInfo) meta.app = appInfo;
+    if (this.appInfo) meta.app = this.appInfo;
 
     // set the body used for returning with and sending logs
     // (and also remove circular references)

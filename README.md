@@ -287,6 +287,7 @@ Please see Cabin's documentation for [stack traces and error handling](https://g
 * `level` (String) - the default level of logging to capture (defaults to `info`, which includes all logs including info and higher in severity (e.g. `info`, `warn`, `error`, `fatal`)
 * `capture` (Boolean) - defaults to `false` in browser (all environments) and server-side (non-production only) environments, whether or not to `POST` logs to the `endpoint` (takes into consideration the `config.level` to only send valid capture levels
 * `callback` (Function) - defaults to `false`, but if it is a `Function`, then it will be called with `callback(level, message, meta)` – this is super useful for [sending messages to Slack when errors occur (see below)](#send-logs-to-slack).  Note that if you specify `{ callback: false }` in the meta object when logging, it will prevent the callback function from being invoked (e.g. `axe.error(new Error('Slack callback failed'), { callback: false })` ‐ see below example).  The `callback` property is always purged from `meta` object for sanity.
+* `appInfo` (Boolean) - defaults to `true` (attempts to parse a boolean value from `process.env.APP_INFO`) - whether or not to parse application information (using [parse-app-info][]).
 
 
 ## Aliases
@@ -420,7 +421,7 @@ If you are seeking permission to use these trademarks, then please [contact us](
 [MIT](LICENSE) © [Nick Baugh](http://niftylettuce.com)
 
 
-## 
+##
 
 [npm]: https://www.npmjs.com/
 
