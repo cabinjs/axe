@@ -201,6 +201,8 @@ class Axe {
       err = message;
       if (!isObject(meta.err)) meta.err = parseErr(err);
       ({ message } = message);
+    } else if (isError(meta.err)) {
+      err = meta.err;
     }
 
     // omit `callback` from `meta` if it was passed
