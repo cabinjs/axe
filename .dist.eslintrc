@@ -23,7 +23,8 @@
     "no-console": "off",
     "no-sparse-arrays": "off",
     "no-undef": "off",
-    "no-prototype-builtins": "off"
+    "no-prototype-builtins": "off",
+    "no-unsafe-finally": "off"
   },
   "globals": {
     "ActiveXObject": "readonly"

@@ -1,8 +1,8 @@
 // eslint-disable-next-line import/no-unassigned-import
 require('console-polyfill');
 
-const boolean = require('boolean');
 const cuid = require('cuid');
+const format = require('format-util');
 const formatSpecifiers = require('format-specifiers');
 const isError = require('iserror');
 const omit = require('omit.js');
@@ -10,7 +10,7 @@ const parseAppInfo = require('parse-app-info');
 const parseErr = require('parse-err');
 const safeStringify = require('fast-safe-stringify');
 const superagent = require('superagent');
-const format = require('format-util');
+const { boolean } = require('boolean');
 
 const pkg = require('../package.json');
 
@@ -89,16 +89,16 @@ class Axe {
 
     // inherit methods from parent logger
     const methods = Object.keys(this.config.logger).filter(
-      key => omittedLoggerKeys.indexOf(key) === -1
+      key => !omittedLoggerKeys.includes(key)
     );
-    for (let i = 0; i < methods.length; i++) {
-      this[methods[i]] = this.config.logger[methods[i]];
+    for (const element of methods) {
+      this[element] = this.config.logger[element];
     }
 
     // bind helper functions for each log level
-    for (let i = 0; i < levels.length; i++) {
-      this[levels[i]] = (...args) =>
-        this.log(...[levels[i]].concat([].slice.call(args)));
+    for (const element of levels) {
+      this[element] = (...args) =>
+        this.log(...[element].concat([].slice.call(args)));
     }
 
     // we could have used `auto-bind` but it's not compiled for browser
@@ -122,7 +122,7 @@ class Axe {
   }
 
   setLevel(level) {
-    if (!isString(level) || levels.indexOf(level) === -1)
+    if (!isString(level) || !levels.includes(level))
       throw new Error(levelError);
     // support signale logger and other loggers that use `logLevel`
     if (isString(this.config.logger.logLevel))
@@ -155,7 +155,7 @@ class Axe {
       meta = message;
       message = level;
       level = 'error';
-    } else if (!isString(level) || levels.indexOf(level) === -1) {
+    } else if (!isString(level) || !levels.includes(level)) {
       meta = message;
       message = level;
       level = 'info';
@@ -170,7 +170,7 @@ class Axe {
     } else if (
       originalArgs.length === 3 + modifier &&
       isString(message) &&
-      formatSpecifiers.filter(t => message.indexOf(t) !== -1).length > 0
+      formatSpecifiers.filter(t => message.includes(t)).length > 0
     ) {
       // otherwise if there are three args and if the `message` contains
       // a placeholder token (e.g. '%s' or '%d' - see above `formatSpecifiers` variable)
@@ -224,7 +224,7 @@ class Axe {
     // send to Cabin or other logging service here the `message` and `meta`
     if (
       config.capture &&
-      config.levels.indexOf(level) !== -1 &&
+      config.levels.includes(level) &&
       (!isError(err) || !err._captureFailed)
     ) {
       // if the user didn't specify a key
@@ -268,7 +268,7 @@ class Axe {
     if (config.silent) return body;
 
     // return early if it is not a valid logging level
-    if (config.levels.indexOf(level) === -1) return body;
+    if (!config.levels.includes(level)) return body;
 
     //
     // determine log method to use
