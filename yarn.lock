@@ -843,6 +843,11 @@
     debug "^3.2.6"
     escope "^3.6.0"
 
+"@ladjs/format-util@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@ladjs/format-util/-/format-util-1.0.4.tgz#dd16ecee7b9d1deb56e1a4968dc5e9ac54499df3"
+  integrity sha512-hZere0rUga8kTzSTFbHREXpD9E/jwi94+B5RyLAmMIzl/w/EK1z7rFEnMHzPkU4AZkL42JWSsGXoV8LXMihybg==
+
 "@marionebl/sander@^0.6.0":
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/@marionebl/sander/-/sander-0.6.1.tgz#1958965874f24bc51be48875feb50d642fc41f7b"
@@ -4157,11 +4162,6 @@ format-specifiers@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/format-specifiers/-/format-specifiers-1.0.0.tgz#75df845916598b3472a6f60000284ad94ccf6f55"
   integrity sha512-/xcmy6xn/DsR+V6flFj3E47yCbrsk70r90moAMENVkKckUPUG9CRE79S/2xajLVx1iADIoWx+1R304uMXB/riQ==
-
-format-util@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/format-util/-/format-util-1.0.3.tgz#032dca4a116262a12c43f4c3ec8566416c5b2d95"
-  integrity sha1-Ay3KShFiYqEsQ/TD7IVmQWxbLZU=
 
 format@^0.2.2:
   version "0.2.2"

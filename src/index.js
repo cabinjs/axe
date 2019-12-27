@@ -2,7 +2,7 @@
 require('console-polyfill');
 
 const cuid = require('cuid');
-const format = require('format-util');
+const format = require('@ladjs/format-util');
 const formatSpecifiers = require('format-specifiers');
 const isError = require('iserror');
 const omit = require('omit.js');
