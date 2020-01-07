@@ -16,6 +16,7 @@ const pkg = require('../package.json');
 
 const omittedLoggerKeys = ['config', 'log'];
 const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
+const aliases = { warning: 'warn', err: 'error' };
 const endpoint = 'https://api.cabinjs.com';
 const env = process.env.NODE_ENV || 'development';
 const levelError = `\`level\` invalid, must be: ${levels.join(', ')}`;
@@ -103,6 +104,7 @@ class Axe {
 
     // we could have used `auto-bind` but it's not compiled for browser
     this.setLevel = this.setLevel.bind(this);
+    this.getNormalizedLevel = this.getNormalizedLevel.bind(this);
     this.setName = this.setName.bind(this);
     this.setCallback = this.setCallback.bind(this);
 
@@ -133,6 +135,13 @@ class Axe {
     this.config.levels = levels.slice(levels.indexOf(level));
   }
 
+  getNormalizedLevel(level) {
+    if (!isString(level)) return 'info';
+    if (isString(aliases[level])) return aliases[level];
+    if (!levels.includes(level)) return 'info';
+    return level;
+  }
+
   setName(name) {
     if (!isString(name)) throw new Error('`name` must be a String');
     // support signale logger and other loggers that use `scope`
@@ -142,29 +151,49 @@ class Axe {
 
   // eslint-disable-next-line complexity
   log(level, message, meta, ...args) {
-    let originalArgs = [level, message];
+    let originalArgs = [];
+    if (!isUndefined(level)) originalArgs.push(level);
+    if (!isUndefined(message)) originalArgs.push(message);
     if (!isUndefined(meta)) originalArgs.push(meta);
     originalArgs = originalArgs.concat([].slice.call(args));
     const { config } = this;
     let modifier = 0;
 
-    if (level === 'warning') level = 'warn';
-    if (level === 'err') level = 'error';
-
-    if (isError(level)) {
+    if (isString(level) && isString(aliases[level])) {
+      level = aliases[level];
+    } else if (isError(level)) {
       meta = message;
       message = level;
       level = 'error';
     } else if (!isString(level) || !levels.includes(level)) {
       meta = message;
       message = level;
-      level = 'info';
+      level = this.getNormalizedLevel(level);
       modifier = -1;
     }
 
-    // if there are four or more args
-    // then infer to use util.format on everything
-    if (originalArgs.length >= 4 + modifier) {
+    // bunyan support (meta, message)
+    if ((isObject(message) || Array.isArray(message)) && isString(meta)) {
+      const _meta = meta;
+      meta = message;
+      message = _meta;
+    }
+
+    // if message was undefined then set it to level
+    if (isUndefined(message)) message = level;
+
+    // if only `message` was passed then if it was an Object
+    // preserve it as an Object by setting it as meta
+    if (
+      originalArgs.slice(1 + modifier).length === 1 &&
+      !isString(message) &&
+      !isError(message)
+    ) {
+      meta = { message };
+      message = level;
+    } else if (originalArgs.length >= 4 + modifier) {
+      // if there are four or more args
+      // then infer to use util.format on everything
       message = format(...originalArgs.slice(1 + modifier));
       meta = {};
     } else if (
@@ -194,7 +223,8 @@ class Axe {
     }
 
     // if (!isPlainObject(meta)) meta = {};
-    if (!isObject(meta)) meta = {};
+    if (!isUndefined(meta) && !isObject(meta)) meta = { meta };
+    else if (!isObject(meta)) meta = {};
 
     let err;
     if (isError(message)) {

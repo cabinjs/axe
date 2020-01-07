@@ -300,6 +300,7 @@ We have provided helper/safety aliases for `logger.warn` and `logger.error` of `
 Two extra methods are available, which were inspired by [Slack's logger][slack-logger] and added for compatibility:
 
 * `axe.setLevel(level)` - sets the log `level` (String) severity to capture (must be valid enumerable level)
+* `axe.getNormalizedLevel(level)` - gets the normalized log `level` (String) severity (normalizes to known logger levels, e.g. "warning" => "warn", "err" => "error", "log" => "info")
 * `axe.setName(name)` - sets the `name` (String) property (some loggers like `pino` will prefix logs with the name set here)
 * `axe.setCallback(callback)` - sets the `callback` (Function) property (see `callback` option above and [Slack example below](#send-logs-to-slack)
 
