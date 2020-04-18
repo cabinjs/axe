@@ -127,6 +127,40 @@ module.exports = (test, logger = console) => {
       );
     });
 
+    test(`${name} level ${level} works with Bunyan-style (meta, message, ...args) with format specifiers`, t => {
+      const message = `${level} works with meta %s and %d %d %d`;
+      const meta = { user: { username: 'test' } };
+      t.context.axe[level](meta, message, 'foo', 5, 6, 8);
+      const str = format(message, 'foo', 5, 6, 8);
+      t.true(
+        t.context[map[level]].calledWith(
+          str,
+          sinon.match({
+            user: {
+              username: `test`
+            }
+          })
+        )
+      );
+    });
+
+    test(`${name} level ${level} works with Bunyan-style (meta, message, arg) with format specifiers`, t => {
+      const message = `${level} works with meta %s`;
+      const meta = { user: { username: 'test' } };
+      t.context.axe[level](meta, message, 'foo');
+      const str = format(message, 'foo');
+      t.true(
+        t.context[map[level]].calledWith(
+          str,
+          sinon.match({
+            user: {
+              username: `test`
+            }
+          })
+        )
+      );
+    });
+
     test(`${name} level ${level} works with Error as first argument`, t => {
       const err = new Error(`test ${level} error`);
       t.context.axe[level](err);

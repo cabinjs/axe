@@ -172,11 +172,16 @@ class Axe {
       modifier = -1;
     }
 
-    // bunyan support (meta, message)
+    // bunyan support (meta, message, ...args)
+    let isBunyan = false;
     if ((isObject(message) || Array.isArray(message)) && isString(meta)) {
+      isBunyan = true;
       const _meta = meta;
       meta = message;
-      message = _meta;
+      message =
+        isString(_meta) && originalArgs.length >= 3 + modifier
+          ? format(...originalArgs.slice(2 + modifier))
+          : _meta;
     }
 
     // if message was undefined then set it to level
@@ -191,12 +196,13 @@ class Axe {
     ) {
       meta = { message };
       message = level;
-    } else if (originalArgs.length >= 4 + modifier) {
+    } else if (!isBunyan && originalArgs.length >= 4 + modifier) {
       // if there are four or more args
       // then infer to use util.format on everything
       message = format(...originalArgs.slice(1 + modifier));
       meta = {};
     } else if (
+      !isBunyan &&
       originalArgs.length === 3 + modifier &&
       isString(message) &&
       formatSpecifiers.filter(t => message.includes(t)).length > 0
