@@ -233,7 +233,22 @@ In [Lad][], we have an approach similar to the following, where non-production e
 ```js
 const Axe = require('axe');
 const consola = require('consola');
-const pino = require('pino')();
+const pino = require('pino')({
+  customLevels: {
+    log: 30
+  },
+  hooks: {
+    // <https://github.com/pinojs/pino/blob/master/docs/api.md#logmethod>
+    logMethod(inputArgs, method) {
+      return method.call(this, {
+        // <https://github.com/pinojs/pino/issues/854>
+        // message: inputArgs[0],
+        msg: inputArgs[0],
+        meta: inputArgs[1]
+      });
+    }
+  }
+});
 
 const isProduction = process.env.NODE_ENV === 'production';
 const logger = new Axe({
@@ -326,7 +341,22 @@ This is just an example of using the `callback` option to send a message to Slac
    const Axe = require('axe');
    const { WebClient } = require('@slack/web-api');
    const signale = require('signale');
-   const pino = require('pino')();
+   const pino = require('pino')({
+     customLevels: {
+       log: 30
+     },
+     hooks: {
+       // <https://github.com/pinojs/pino/blob/master/docs/api.md#logmethod>
+       logMethod(inputArgs, method) {
+         return method.call(this, {
+           // <https://github.com/pinojs/pino/issues/854>
+           // message: inputArgs[0],
+           msg: inputArgs[0],
+           meta: inputArgs[1]
+         });
+       }
+     }
+   });
 
    const isProduction = process.env.NODE_ENV === 'production';
 
