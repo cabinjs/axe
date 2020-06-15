@@ -38,7 +38,7 @@
     "format-specifiers": "^1.0.0",
     "iserror": "^0.0.2",
     "omit.js": "^1.0.2",
-    "parse-app-info": "^2.0.5",
+    "parse-app-info": "^3.0.1",
     "parse-err": "^0.0.12",
     "superagent": "^5.2.2"
   },
@@ -48,11 +48,11 @@
     "@babel/preset-env": "^7.10.2",
     "@commitlint/cli": "^8.3.5",
     "@commitlint/config-conventional": "^8.3.4",
-    "ava": "^3.8.2",
+    "ava": "^3.9.0",
     "babelify": "^10.0.0",
     "browserify": "^16.5.1",
     "codecov": "^3.7.0",
-    "consola": "^2.12.2",
+    "consola": "^2.13.0",
     "cross-env": "^7.0.2",
     "eslint": "6.x",
     "eslint-config-xo-lass": "^1.0.3",
@@ -62,11 +62,11 @@
     "fixpack": "^3.0.6",
     "husky": "^4.2.5",
     "jsdom": "15.x",
-    "koa": "^2.12.0",
-    "lint-staged": "^10.2.7",
+    "koa": "^2.12.1",
+    "lint-staged": "^10.2.10",
     "lodash": "^4.17.15",
-    "nyc": "^15.0.1",
-    "pino": "^6.3.1",
+    "nyc": "^15.1.0",
+    "pino": "^6.3.2",
     "remark-cli": "^8.0.0",
     "remark-preset-github": "^1.0.1",
     "rimraf": "^3.0.2",
@@ -76,7 +76,7 @@
     "xo": "0.25"
   },
   "engines": {
-    "node": ">=6.4.0"
+    "node": ">=7.0.0"
   },
   "files": [
     "lib",
