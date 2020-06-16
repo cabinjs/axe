@@ -38,7 +38,7 @@
     "format-specifiers": "^1.0.0",
     "iserror": "^0.0.2",
     "omit.js": "^1.0.2",
-    "parse-app-info": "^3.0.2",
+    "parse-app-info": "^3.0.3",
     "parse-err": "^0.0.12",
     "superagent": "^5.2.2"
   },
