@@ -6967,15 +6967,16 @@ parents@^1.0.0, parents@^1.0.1:
   dependencies:
     path-platform "~0.11.15"
 
-parse-app-info@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/parse-app-info/-/parse-app-info-3.0.1.tgz#65185d82fe7cd1bb3e83a3754a4cf1a67d2e48d4"
-  integrity sha512-WxDmCSfUvqOs8LwmH77jOvUz6k+NFM+YjIvYG8CUomwxsWymUTIK5RgxgNNpD0YkU+EkZWcA+VWawG4ZefJvBQ==
+parse-app-info@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/parse-app-info/-/parse-app-info-3.0.2.tgz#c084ff6728b8da85d23e47553b73524c57b5171e"
+  integrity sha512-tEx5Tp5FfC0VdFzkZw7l818ofVar3YXA1S25ipUUfk2+3ITZxP2+0JXykwyP443j3gZRgDGn+uFXDots+TI5jw==
   dependencies:
     debug "^4.1.1"
     last-commit-log "^3.0.4"
     lodash "^4.17.15"
     read-pkg-up "^7.0.1"
+    semver "^7.3.2"
 
 parse-asn1@^5.0.0, parse-asn1@^5.1.5:
   version "5.1.5"
