@@ -63,7 +63,7 @@ class Axe {
         endpoint,
         headers: {},
         timeout: 5000,
-        retry: 3,
+        // retry: 3,
         showStack: process.env.SHOW_STACK
           ? boolean(process.env.SHOW_STACK)
           : true,
@@ -286,9 +286,9 @@ class Axe {
       if (!isEmpty(config.headers)) req.set(config.headers);
 
       req
-        .retry(config.retry)
         .type('application/json')
         .send(body)
+        // .retry(config.retry)
         .end(err => {
           if (err) {
             err._captureFailed = true;
