@@ -14,7 +14,7 @@ const { boolean } = require('boolean');
 
 const pkg = require('../package.json');
 
-const omittedLoggerKeys = ['config', 'log'];
+const omittedLoggerKeys = new Set(['config', 'log']);
 const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
 const aliases = { warning: 'warn', err: 'error' };
 const endpoint = 'https://api.cabinjs.com';
@@ -31,28 +31,28 @@ function isEmpty(value) {
   );
 }
 
-function isNull(val) {
-  return val === null;
+function isNull(value) {
+  return value === null;
 }
 
-function isUndefined(val) {
-  return typeof val === 'undefined';
+function isUndefined(value) {
+  return typeof value === 'undefined';
 }
 
-function isObject(val) {
-  return typeof val === 'object' && val !== null && !Array.isArray(val);
+function isObject(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function isString(val) {
-  return typeof val === 'string';
+function isString(value) {
+  return typeof value === 'string';
 }
 
-function isFunction(val) {
-  return typeof val === 'function';
+function isFunction(value) {
+  return typeof value === 'function';
 }
 
-function isBoolean(val) {
-  return typeof val === 'boolean';
+function isBoolean(value) {
+  return typeof value === 'boolean';
 }
 
 class Axe {
@@ -63,7 +63,7 @@ class Axe {
         endpoint,
         headers: {},
         timeout: 5000,
-        // retry: 3,
+        retry: 3,
         showStack: process.env.SHOW_STACK
           ? boolean(process.env.SHOW_STACK)
           : true,
@@ -90,7 +90,7 @@ class Axe {
 
     // inherit methods from parent logger
     const methods = Object.keys(this.config.logger).filter(
-      key => !omittedLoggerKeys.includes(key)
+      (key) => !omittedLoggerKeys.has(key)
     );
     for (const element of methods) {
       this[element] = this.config.logger[element];
@@ -205,7 +205,7 @@ class Axe {
       !isBunyan &&
       originalArgs.length === 3 + modifier &&
       isString(message) &&
-      formatSpecifiers.filter(t => message.includes(t)).length > 0
+      formatSpecifiers.filter((t) => message.includes(t)).length > 0
     ) {
       // otherwise if there are three args and if the `message` contains
       // a placeholder token (e.g. '%s' or '%d' - see above `formatSpecifiers` variable)
@@ -272,24 +272,24 @@ class Axe {
         );
 
       // capture the log over HTTP
-      const req = superagent
+      const request = superagent
         .post(config.endpoint)
         .set('X-Request-Id', cuid())
         .timeout(config.timeout);
 
-      if (!process.browser) req.set('User-Agent', `axe/${pkg.version}`);
+      if (!process.browser) request.set('User-Agent', `axe/${pkg.version}`);
 
       // basic auth (e.g. Cabin API key)
-      if (config.key) req.auth(config.key);
+      if (config.key) request.auth(config.key);
 
       // set headers if any
-      if (!isEmpty(config.headers)) req.set(config.headers);
+      if (!isEmpty(config.headers)) request.set(config.headers);
 
-      req
+      request
         .type('application/json')
         .send(body)
-        // .retry(config.retry)
-        .end(err => {
+        .retry(config.retry)
+        .end((err) => {
           if (err) {
             err._captureFailed = true;
             this.config.logger.error(err);

@@ -13,7 +13,8 @@
       "Object.getOwnPropertySymbols",
       "Symbol.iterator",
       "Symbol.prototype",
-      "Object.assign"
+      "Object.assign",
+      "Set"
     ]
   }
 }
