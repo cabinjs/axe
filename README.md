@@ -193,7 +193,7 @@ We recommend using <https://polyfill.io> (specifically with the bundle mentioned
 * Symbol.toPrimitive() is not supported in IE 10
 * Symbol.toStringTag() is not supported in IE 10
 * Uint32Array is not supported in IE Mobile 10, IE 10, Blackberry Browser 7
-* window.crypto() is not supported in IE 10
+* window\.crypto() is not supported in IE 10
 * Object.assign() is not supported in IE 10
 * Object.getOwnPropertySymbols() is not supported in IE 10
 * Array.from() is not supported in IE 10
@@ -207,7 +207,7 @@ If you're using something like [browserify][], [webpack][], or [rollup][], then 
 
 By default, Axe uses the built-in `console` (with [console-polyfill][] for cross-browser support).
 
-However you might want to use something fancier, and as such we support _any_ logger out of the box.
+However you might want to use something fancier, and as such we support *any* logger out of the box.
 
 Loggers supported include, but are not limited to:
 
@@ -453,7 +453,7 @@ If you are seeking permission to use these trademarks, then please [contact us](
 [MIT](LICENSE) © [Nick Baugh](http://niftylettuce.com)
 
 
-## 
+##
 
 [npm]: https://www.npmjs.com/
 
