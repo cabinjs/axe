@@ -38,7 +38,7 @@
     "format-specifiers": "^1.0.0",
     "iserror": "^0.0.2",
     "lodash.omit": "^4.5.0",
-    "parse-app-info": "^4.0.0",
+    "parse-app-info": "^4.0.1",
     "parse-err": "^0.0.12",
     "superagent": "^6.1.0"
   },
