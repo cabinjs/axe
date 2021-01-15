@@ -18,7 +18,6 @@ const omittedLoggerKeys = new Set(['config', 'log']);
 const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
 const aliases = { warning: 'warn', err: 'error' };
 const endpoint = 'https://api.cabinjs.com';
-const env = process.env.NODE_ENV || 'development';
 const levelError = `\`level\` invalid, must be: ${levels.join(', ')}`;
 
 // <https://stackoverflow.com/a/43233163>
@@ -73,7 +72,8 @@ class Axe {
         name: false,
         level: 'info',
         levels: ['info', 'warn', 'error', 'fatal'],
-        capture: process.browser ? false : env === 'production',
+        // TODO: if user specifies `key` and it is `process.platform === 'browser' || process.browser || env === 'production'` then set `capture` to `true`
+        capture: false,
         callback: false,
         appInfo: process.env.APP_INFO ? boolean(process.env.APP_INFO) : true
       },
@@ -232,13 +232,13 @@ class Axe {
     if (!isUndefined(meta) && !isObject(meta)) meta = { meta };
     else if (!isObject(meta)) meta = {};
 
-    let err;
+    let error;
     if (isError(message)) {
-      err = message;
-      if (!isObject(meta.err)) meta.err = parseErr(err);
+      error = message;
+      if (!isObject(meta.err)) meta.err = parseErr(error);
       ({ message } = message);
     } else if (isError(meta.err)) {
-      err = meta.err;
+      error = meta.err;
     }
 
     // omit `callback` from `meta` if it was passed
@@ -261,7 +261,7 @@ class Axe {
     if (
       config.capture &&
       config.levels.includes(level) &&
-      (!isError(err) || !err._captureFailed)
+      (!isError(error) || !error._captureFailed)
     ) {
       // if the user didn't specify a key
       // and they are using the default endpoint
@@ -289,10 +289,10 @@ class Axe {
         .type('application/json')
         .send(body)
         .retry(config.retry)
-        .end((err) => {
-          if (err) {
-            err._captureFailed = true;
-            this.config.logger.error(err);
+        .end((error_) => {
+          if (error_) {
+            error_._captureFailed = true;
+            this.config.logger.error(error_);
           }
         });
     }
@@ -323,9 +323,9 @@ class Axe {
     const omitted = omit(meta, ['level', 'err']);
 
     // show stack trace if necessary (along with any metadata)
-    if (method === 'error' && isError(err) && config.showStack) {
-      if (!config.showMeta || isEmpty(omitted)) this.config.logger.error(err);
-      else this.config.logger.error(err, omitted);
+    if (method === 'error' && isError(error) && config.showStack) {
+      if (!config.showMeta || isEmpty(omitted)) this.config.logger.error(error);
+      else this.config.logger.error(error, omitted);
     } else if (!config.showMeta || isEmpty(omitted)) {
       this.config.logger[method](message);
     } else {

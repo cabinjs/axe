@@ -162,19 +162,19 @@ module.exports = (test, logger = console) => {
     });
 
     test(`${name} level ${level} works with Error as first argument`, (t) => {
-      const err = new Error(`test ${level} error`);
-      t.context.axe[level](err);
+      const error = new Error(`test ${level} error`);
+      t.context.axe[level](error);
       const _level = level === 'log' ? 'error' : level;
       if (map[_level] === 'error')
         t.true(
           t.context[map[_level]].calledWith(
             sinon.match
               .instanceOf(Error)
-              .and(sinon.match.has('name', err.name))
-              .and(sinon.match.has('message', err.message))
+              .and(sinon.match.has('name', error.name))
+              .and(sinon.match.has('message', error.message))
           )
         );
-      else t.true(t.context[map[_level]].calledWithMatch(err.message));
+      else t.true(t.context[map[_level]].calledWithMatch(error.message));
     });
 
     test(`${name} level ${level} allows four or more args`, (t) => {
