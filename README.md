@@ -25,6 +25,7 @@
   * [Suppress logs](#suppress-logs)
   * [Stack Traces and Error Handling](#stack-traces-and-error-handling)
 * [Options](#options)
+  * [DEPRECATED](#deprecated)
 * [Aliases](#aliases)
 * [Methods](#methods)
 * [Send Logs To Slack](#send-logs-to-slack)
@@ -296,7 +297,10 @@ Please see Cabin's documentation for [stack traces and error handling](https://g
 * `timeout` (Number) - defaults to `5000`, number of milliseconds to wait for a response
 * `retry` (Number) - defaults to `3`, number of attempts to retry sending log over HTTP
 * `showStack` (Boolean) - defaults to `true` (attempts to parse a boolean value from `process.env.SHOW_STACK`) - whether or not to output a stack trace
-* `showMeta` (Boolean) - defaults to `true` (attempts to parse a boolean value from `process.env.SHOW_META` – meaning you can pass a flag `SHOW_META=true node app.js` when needed for debugging), whether or not to output metadata to logger methods
+* `meta` (Object) - stores all meta config information
+  * `show` (Boolean) - defaults to `true` (attempts to parse a boolean value from `process.env.SHOW_META` – meaning you can pass a flag `SHOW_META=true node app.js` when needed for debugging), whether or not to output metadata to logger methods.
+  * `showApp` (Boolean) - defaults to `true` (attempts to parse a boolean value from `process.env.SHOW_META_APP` – meaning you can pass a flag `SHOW_META_APP=true node app.js` when needed for debugging), whether or not to output `appInfo` in the metadata to logger methods.
+  * `omittedFields` (Array) - defaults to `[]` (attempts to parse an array value from `process.env.OMIT_META_FIELDS` (`,` delimited) - meaning you can pass a flag `OMIT_META_FIELDS=user,id node app.js`), determining which fields to omit in the metadata passed to logger methods.
 * `silent` (Boolean) - defaults to `false`, whether or not to suppress log output to console
 * `logger` (Object) - defaults to `console` (with [console-polyfill][] added automatically), but you may wish to use a [custom logger](#custom-logger)
 * `name` (String) - the default name for the logger (defaults to `false`, which does not set `logger.name`).  If you wish to pass a name such as `os.hostname()`, then set `name: os.hostname()` – this is useful if you are using a logger like `pino` which prefixes log output with the name set here.
@@ -304,6 +308,11 @@ Please see Cabin's documentation for [stack traces and error handling](https://g
 * `capture` (Boolean) - defaults to `false`, whether or not to `POST` logs to the `endpoint` (takes into consideration the `config.level` to only send valid capture levels)
 * `callback` (Function) - defaults to `false`, but if it is a `Function`, then it will be called with `callback(level, message, meta)` – this is super useful for [sending messages to Slack when errors occur (see below)](#send-logs-to-slack).  Note that if you specify `{ callback: false }` in the meta object when logging, it will prevent the callback function from being invoked (e.g. `axe.error(new Error('Slack callback failed'), { callback: false })` ‐ see below example).  The `callback` property is always purged from `meta` object for sanity.
 * `appInfo` (Boolean) - defaults to `true` (attempts to parse a boolean value from `process.env.APP_INFO`) - whether or not to parse application information (using [parse-app-info][]).
+
+### DEPRECATED
+
+* `showMeta` (Boolean) - defaults to `true` (attempts to parse a boolean value from `process.env.SHOW_META` – meaning you can pass a flag `SHOW_META=true node app.js` when needed for debugging), whether or not to output metadata to logger methods.
+  * This will be automatically assigned to `meta.show` when passed as part of config.
 
 
 ## Aliases
