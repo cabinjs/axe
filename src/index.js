@@ -66,7 +66,15 @@ class Axe {
         showStack: process.env.SHOW_STACK
           ? boolean(process.env.SHOW_STACK)
           : true,
-        showMeta: process.env.SHOW_META ? boolean(process.env.SHOW_META) : true,
+        meta: {
+          show: process.env.SHOW_META ? boolean(process.env.SHOW_META) : true,
+          showApp: process.env.SHOW_META_APP
+            ? boolean(process.env.SHOW_META_APP)
+            : true,
+          omittedFields: process.env.OMIT_META_FIELDS
+            ? process.env.OMIT_META_FIELDS.split(',').map((s) => s.trim())
+            : []
+        },
         silent: false,
         logger: console,
         name: false,
@@ -80,6 +88,12 @@ class Axe {
       config
     );
 
+    // For backwards compatability
+    if (this.config.showMeta) {
+      this.config.meta.show = this.config.showMeta;
+      delete this.config.showMeta;
+    }
+
     this.appInfo = this.config.appInfo
       ? isFunction(parseAppInfo)
         ? parseAppInfo()
@@ -88,7 +102,7 @@ class Axe {
 
     this.log = this.log.bind(this);
 
-    // inherit methods from parent logger
+    // Inherit methods from parent logger
     const methods = Object.keys(this.config.logger).filter(
       (key) => !omittedLoggerKeys.has(key)
     );
@@ -96,25 +110,25 @@ class Axe {
       this[element] = this.config.logger[element];
     }
 
-    // bind helper functions for each log level
+    // Bind helper functions for each log level
     for (const element of levels) {
       this[element] = (...args) =>
         this.log(...[element].concat([].slice.call(args)));
     }
 
-    // we could have used `auto-bind` but it's not compiled for browser
+    // We could have used `auto-bind` but it's not compiled for browser
     this.setLevel = this.setLevel.bind(this);
     this.getNormalizedLevel = this.getNormalizedLevel.bind(this);
     this.setName = this.setName.bind(this);
     this.setCallback = this.setCallback.bind(this);
 
-    // set the logger name
+    // Set the logger name
     if (this.config.name) this.setName(this.config.name);
 
-    // set the logger level
+    // Set the logger level
     this.setLevel(this.config.level);
 
-    // aliases
+    // Aliases
     this.err = this.error;
     this.warning = this.warn;
   }
@@ -126,11 +140,11 @@ class Axe {
   setLevel(level) {
     if (!isString(level) || !levels.includes(level))
       throw new Error(levelError);
-    // support signale logger and other loggers that use `logLevel`
+    // Support signale logger and other loggers that use `logLevel`
     if (isString(this.config.logger.logLevel))
       this.config.logger.logLevel = level;
     else this.config.logger.level = level;
-    // adjusts `this.config.levels` array
+    // Adjusts `this.config.levels` array
     // so that it has all proceeding (inclusive)
     this.config.levels = levels.slice(levels.indexOf(level));
   }
@@ -144,7 +158,7 @@ class Axe {
 
   setName(name) {
     if (!isString(name)) throw new Error('`name` must be a String');
-    // support signale logger and other loggers that use `scope`
+    // Support signale logger and other loggers that use `scope`
     if (isString(this.config.logger.scope)) this.config.logger.scope = name;
     else this.config.logger.name = name;
   }
@@ -172,7 +186,7 @@ class Axe {
       modifier = -1;
     }
 
-    // bunyan support (meta, message, ...args)
+    // Bunyan support (meta, message, ...args)
     let isBunyan = false;
     if ((isObject(message) || Array.isArray(message)) && isString(meta)) {
       isBunyan = true;
@@ -184,10 +198,10 @@ class Axe {
           : _meta;
     }
 
-    // if message was undefined then set it to level
+    // If message was undefined then set it to level
     if (isUndefined(message)) message = level;
 
-    // if only `message` was passed then if it was an Object
+    // If only `message` was passed then if it was an Object
     // preserve it as an Object by setting it as meta
     if (
       originalArgs.slice(1 + modifier).length === 1 &&
@@ -197,7 +211,7 @@ class Axe {
       meta = { message };
       message = level;
     } else if (!isBunyan && originalArgs.length >= 4 + modifier) {
-      // if there are four or more args
+      // If there are four or more args
       // then infer to use util.format on everything
       message = format(...originalArgs.slice(1 + modifier));
       meta = {};
@@ -207,7 +221,7 @@ class Axe {
       isString(message) &&
       formatSpecifiers.filter((t) => message.includes(t)).length > 0
     ) {
-      // otherwise if there are three args and if the `message` contains
+      // Otherwise if there are three args and if the `message` contains
       // a placeholder token (e.g. '%s' or '%d' - see above `formatSpecifiers` variable)
       // then we can infer that the `meta` arg passed is used for formatting
       message = format(message, meta);
@@ -217,18 +231,18 @@ class Axe {
         meta = { err: parseErr(meta) };
         // } else if (!isPlainObject(meta) && !isUndefined(meta) && !isNull(meta)) {
       } else if (!isObject(meta) && !isUndefined(meta) && !isNull(meta)) {
-        // if the `meta` variable passed was not an Object then convert it
+        // If the `meta` variable passed was not an Object then convert it
         message = format(message, meta);
         meta = {};
       } else if (!isString(message)) {
-        // if the message is not a string then we should run `util.format` on it
+        // If the message is not a string then we should run `util.format` on it
         // assuming we're formatting it like it was another argument
         // (as opposed to using something like fast-json-stringify)
         message = format(message);
       }
     }
 
-    // if (!isPlainObject(meta)) meta = {};
+    // If (!isPlainObject(meta)) meta = {};
     if (!isUndefined(meta) && !isObject(meta)) meta = { meta };
     else if (!isObject(meta)) meta = {};
 
@@ -241,29 +255,29 @@ class Axe {
       error = meta.err;
     }
 
-    // omit `callback` from `meta` if it was passed
+    // Omit `callback` from `meta` if it was passed
     const callback =
       isFunction(config.callback) &&
       (!isBoolean(meta.callback) || meta.callback);
     meta = omit(meta, ['callback']);
 
-    // set default level on meta
+    // Set default level on meta
     meta.level = level;
 
-    // add `app` object to metadata
+    // Add `app` object to metadata
     if (this.appInfo) meta.app = this.appInfo;
 
-    // set the body used for returning with and sending logs
+    // Set the body used for returning with and sending logs
     // (and also remove circular references)
     const body = safeStringify({ message, meta });
 
-    // send to Cabin or other logging service here the `message` and `meta`
+    // Send to Cabin or other logging service here the `message` and `meta`
     if (
       config.capture &&
       config.levels.includes(level) &&
       (!isError(error) || !error._captureFailed)
     ) {
-      // if the user didn't specify a key
+      // If the user didn't specify a key
       // and they are using the default endpoint
       // then we should throw an error to them
       if (config.endpoint === endpoint && !config.key)
@@ -271,7 +285,7 @@ class Axe {
           "Cabin API key required (e.g. `{ key: 'YOUR-CABIN-API-KEY' })`)\n<https://cabinjs.com>"
         );
 
-      // capture the log over HTTP
+      // Capture the log over HTTP
       const request = superagent
         .post(config.endpoint)
         .set('X-Request-Id', cuid())
@@ -279,10 +293,10 @@ class Axe {
 
       if (!process.browser) request.set('User-Agent', `axe/${pkg.version}`);
 
-      // basic auth (e.g. Cabin API key)
+      // Basic auth (e.g. Cabin API key)
       if (config.key) request.auth(config.key);
 
-      // set headers if any
+      // Set headers if any
       if (!isEmpty(config.headers)) request.set(config.headers);
 
       request
@@ -297,13 +311,13 @@ class Axe {
         });
     }
 
-    // custom callback function (e.g. Slack message)
+    // Custom callback function (e.g. Slack message)
     if (callback) config.callback(level, message, meta);
 
-    // suppress logs if it was silent
+    // Suppress logs if it was silent
     if (config.silent) return body;
 
-    // return early if it is not a valid logging level
+    // Return early if it is not a valid logging level
     if (!config.levels.includes(level)) return body;
 
     //
@@ -319,20 +333,28 @@ class Axe {
     if (modifier === -1) method = 'log';
     else if (level === 'fatal') method = 'error';
 
-    // if there was meta information then output it
-    const omitted = omit(meta, ['level', 'err']);
+    // If there was meta information then output it
+    // setup ommitted fields
+    const omittedFields = ['level', 'err'].concat(
+      this.config.meta.omittedFields
+    );
+    // Omit app is configured
+    if (!this.config.meta.showApp) omittedFields.push('app');
 
-    // show stack trace if necessary (along with any metadata)
+    const omitted = omit(meta, omittedFields);
+
+    // Show stack trace if necessary (along with any metadata)
     if (method === 'error' && isError(error) && config.showStack) {
-      if (!config.showMeta || isEmpty(omitted)) this.config.logger.error(error);
+      if (!config.meta.show || isEmpty(omitted))
+        this.config.logger.error(error);
       else this.config.logger.error(error, omitted);
-    } else if (!config.showMeta || isEmpty(omitted)) {
+    } else if (!config.meta.show || isEmpty(omitted)) {
       this.config.logger[method](message);
     } else {
       this.config.logger[method](message, omitted);
     }
 
-    // return the parsed body in case we need it
+    // Return the parsed body in case we need it
     return body;
   }
 }
