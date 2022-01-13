@@ -165,7 +165,7 @@ axe.info('hello world');
 **The browser-ready bundle is only 36 KB (minified and gzipped)**.
 
 ```html
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto,Object.assign,Object.getOwnPropertySymbols,Array.from,Set"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto,Object.assign,Object.getOwnPropertySymbols,Array.from,Set,BigInt,WeakMap,WeakRef,WeakSet"></script>
 <script src="https://unpkg.com/axe"></script>
 <script type="text/javascript">
   (function() {
@@ -180,7 +180,7 @@ axe.info('hello world');
 We recommend using <https://polyfill.io> (specifically with the bundle mentioned in [VanillaJS](#vanillajs) above):
 
 ```html
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto,Object.assign,Object.getOwnPropertySymbols,Array.from,Set"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto,Object.assign,Object.getOwnPropertySymbols,Array.from,Set,BigInt,WeakMap,WeakRef,WeakSet"></script>
 ```
 
 * Map is not supported in IE 10
@@ -188,7 +188,6 @@ We recommend using <https://polyfill.io> (specifically with the bundle mentioned
 * Math.sign() is not supported in IE 10
 * Promise is not supported in Opera Mobile 12.1, Opera Mini all, IE Mobile 10, IE 10, Blackberry Browser 7
 * Reflect is not supported in IE 10
-* Symbol is not supported in IE 10
 * Symbol.iterator() is not supported in IE 10
 * Symbol.prototype() is not supported in IE 10
 * Symbol.toPrimitive() is not supported in IE 10
@@ -199,6 +198,11 @@ We recommend using <https://polyfill.io> (specifically with the bundle mentioned
 * Object.getOwnPropertySymbols() is not supported in IE 10
 * Array.from() is not supported in IE 10
 * Set is not supported in IE 10
+* Symbol is not supported in IE 10
+* BigInt is not supported in IE 10
+* WeakMap is not supported in IE 10
+* WeakRef is not supported in Opera 81, IE 10
+* WeakSet is not supported in IE 10
 
 #### Bundler
 

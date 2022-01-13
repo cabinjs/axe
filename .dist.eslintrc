@@ -46,7 +46,11 @@
       "Object.assign",
       "Object.getOwnPropertySymbols",
       "Array.from",
-      "Set"
+      "Set",
+      "BigInt",
+      "WeakMap",
+      "WeakRef",
+      "WeakSet"
     ]
   }
 }

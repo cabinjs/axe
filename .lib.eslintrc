@@ -14,7 +14,8 @@
       "Symbol.iterator",
       "Symbol.prototype",
       "Object.assign",
-      "Set"
+      "Set",
+      "Symbol"
     ]
   }
 }

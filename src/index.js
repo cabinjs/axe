@@ -113,7 +113,7 @@ class Axe {
     // Bind helper functions for each log level
     for (const element of levels) {
       this[element] = (...args) =>
-        this.log(...[element].concat([].slice.call(args)));
+        this.log(...[element].concat(Array.prototype.slice.call(args)));
     }
 
     // We could have used `auto-bind` but it's not compiled for browser
@@ -169,7 +169,7 @@ class Axe {
     if (!isUndefined(level)) originalArgs.push(level);
     if (!isUndefined(message)) originalArgs.push(message);
     if (!isUndefined(meta)) originalArgs.push(meta);
-    originalArgs = originalArgs.concat([].slice.call(args));
+    originalArgs = originalArgs.concat(Array.prototype.slice.call(args));
     const { config } = this;
     let modifier = 0;
 
@@ -219,7 +219,7 @@ class Axe {
       !isBunyan &&
       originalArgs.length === 3 + modifier &&
       isString(message) &&
-      formatSpecifiers.filter((t) => message.includes(t)).length > 0
+      formatSpecifiers.some((t) => message.includes(t))
     ) {
       // Otherwise if there are three args and if the `message` contains
       // a placeholder token (e.g. '%s' or '%d' - see above `formatSpecifiers` variable)
