@@ -303,7 +303,7 @@ Please see Cabin's documentation for [stack traces and error handling](https://g
 * `showStack` (Boolean) - defaults to `true` (attempts to parse a boolean value from `process.env.SHOW_STACK`) - whether or not to output a stack trace
 * `meta` (Object) - stores all meta config information
   * `show` (Boolean) - defaults to `true` (attempts to parse a boolean value from `process.env.SHOW_META` – meaning you can pass a flag `SHOW_META=true node app.js` when needed for debugging), whether or not to output metadata to logger methods.
-  * `showApp` (Boolean) - defaults to `true` (attempts to parse a boolean value from `process.env.SHOW_META_APP` – meaning you can pass a flag `SHOW_META_APP=true node app.js` when needed for debugging), whether or not to output `appInfo` in the metadata to logger methods.
+  * `showApp` (Boolean) - defaults to `false` (attempts to parse a boolean value from `process.env.SHOW_META_APP` – meaning you can pass a flag `SHOW_META_APP=true node app.js` when needed for debugging), whether or not to output `appInfo` in the metadata to logger methods.
   * `omittedFields` (Array) - defaults to `[]` (attempts to parse an array value from `process.env.OMIT_META_FIELDS` (`,` delimited) - meaning you can pass a flag `OMIT_META_FIELDS=user,id node app.js`), determining which fields to omit in the metadata passed to logger methods.
 * `silent` (Boolean) - defaults to `false`, whether or not to suppress log output to console
 * `logger` (Object) - defaults to `console` (with [console-polyfill][] added automatically), but you may wish to use a [custom logger](#custom-logger)

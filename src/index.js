@@ -70,7 +70,7 @@ class Axe {
           show: process.env.SHOW_META ? boolean(process.env.SHOW_META) : true,
           showApp: process.env.SHOW_META_APP
             ? boolean(process.env.SHOW_META_APP)
-            : true,
+            : false,
           omittedFields: process.env.OMIT_META_FIELDS
             ? process.env.OMIT_META_FIELDS.split(',').map((s) => s.trim())
             : []
