@@ -113,7 +113,7 @@ class Axe {
     // Bind helper functions for each log level
     for (const element of levels) {
       this[element] = (...args) =>
-        this.log(...[element].concat(Array.prototype.slice.call(args)));
+        this.log(element, ...Array.prototype.slice.call(args));
     }
 
     // We could have used `auto-bind` but it's not compiled for browser
@@ -165,11 +165,14 @@ class Axe {
 
   // eslint-disable-next-line complexity
   log(level, message, meta, ...args) {
-    let originalArgs = [];
+    const originalArgs = [];
     if (!isUndefined(level)) originalArgs.push(level);
     if (!isUndefined(message)) originalArgs.push(message);
     if (!isUndefined(meta)) originalArgs.push(meta);
-    originalArgs = originalArgs.concat(Array.prototype.slice.call(args));
+    for (const arg of Array.prototype.slice.call(args)) {
+      originalArgs.push(arg);
+    }
+
     const { config } = this;
     let modifier = 0;
 
@@ -246,10 +249,12 @@ class Axe {
     if (!isUndefined(meta) && !isObject(meta)) meta = { meta };
     else if (!isObject(meta)) meta = {};
 
+    const hadErrorInMeta = isObject(meta.err);
+
     let error;
     if (isError(message)) {
       error = message;
-      if (!isObject(meta.err)) meta.err = parseErr(error);
+      if (!hadErrorInMeta) meta.err = parseErr(error);
       ({ message } = message);
     } else if (isError(meta.err)) {
       error = meta.err;
@@ -335,19 +340,20 @@ class Axe {
 
     // If there was meta information then output it
     // setup ommitted fields
-    const omittedFields = ['level', 'err'].concat(
-      this.config.meta.omittedFields
-    );
+    const omittedFields = [...this.config.meta.omittedFields];
+    omittedFields.push('level');
+    if (!hadErrorInMeta) omittedFields.push('err');
+
     // Omit app is configured
     if (!this.config.meta.showApp) omittedFields.push('app');
 
     const omitted = omit(meta, omittedFields);
 
     // Show stack trace if necessary (along with any metadata)
-    if (method === 'error' && isError(error) && config.showStack) {
+    if (isError(error) && config.showStack) {
       if (!config.meta.show || isEmpty(omitted))
-        this.config.logger.error(error);
-      else this.config.logger.error(error, omitted);
+        this.config.logger[method](error);
+      else this.config.logger[method](error, omitted);
     } else if (!config.meta.show || isEmpty(omitted)) {
       this.config.logger[method](message);
     } else {

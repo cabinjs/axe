@@ -9,13 +9,6 @@
   },
   "settings": {
     "polyfills": [
-      "Array.from",
-      "Object.getOwnPropertySymbols",
-      "Symbol.iterator",
-      "Symbol.prototype",
-      "Object.assign",
-      "Set",
-      "Symbol"
     ]
   }
 }

@@ -1,11 +1,10 @@
 {
-  "extends": ["eslint:recommended"],
+  "extends": ["eslint:recommended", "plugin:compat/recommended"],
   "env": {
     "node": false,
     "browser": true,
     "amd": true,
-    "es6": true,
-    "commonjs": true
+    "es6": true
   },
   "plugins": ["compat"],
   "rules": {
@@ -27,30 +26,11 @@
     "no-unsafe-finally": "off"
   },
   "globals": {
-    "ActiveXObject": "readonly"
   },
   "settings": {
     "polyfills": [
-      "Map",
-      "Map.prototype",
-      "Math.sign",
-      "Promise",
-      "Reflect",
-      "Symbol",
-      "Symbol.iterator",
-      "Symbol.prototype",
-      "Symbol.toPrimitive",
-      "Symbol.toStringTag",
-      "Uint32Array",
-      "window.crypto",
-      "Object.assign",
-      "Object.getOwnPropertySymbols",
-      "Array.from",
-      "Set",
-      "BigInt",
-      "WeakMap",
       "WeakRef",
-      "WeakSet"
+      "BigInt"
     ]
   }
 }

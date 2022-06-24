@@ -1,7 +1,6 @@
 # Axe
 
-[![build status](https://img.shields.io/travis/cabinjs/axe.svg)](https://travis-ci.org/cabinjs/axe)
-[![code coverage](https://img.shields.io/codecov/c/github/cabinjs/axe.svg)](https://codecov.io/gh/cabinjs/axe)
+[![build status](https://github.com/cabinjs/axe/actions/workflows/ci.yml/badge.svg)](https://github.com/cabinjs/axe/actions/workflows/ci.yml)
 [![code style](https://img.shields.io/badge/code_style-XO-5ed9c7.svg)](https://github.com/sindresorhus/xo)
 [![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 [![made with lass](https://img.shields.io/badge/made_with-lass-95CC28.svg)](https://github.com/lassjs/lass)
@@ -42,12 +41,6 @@
 
 ```sh
 npm install axe
-```
-
-[yarn][]:
-
-```sh
-yarn add axe
 ```
 
 ### Browser
@@ -165,7 +158,7 @@ axe.info('hello world');
 **The browser-ready bundle is only 36 KB (minified and gzipped)**.
 
 ```html
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto,Object.assign,Object.getOwnPropertySymbols,Array.from,Set,BigInt,WeakMap,WeakRef,WeakSet"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=WeakRef,BigInt"></script>
 <script src="https://unpkg.com/axe"></script>
 <script type="text/javascript">
   (function() {
@@ -180,29 +173,11 @@ axe.info('hello world');
 We recommend using <https://polyfill.io> (specifically with the bundle mentioned in [VanillaJS](#vanillajs) above):
 
 ```html
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6,Map,Map.prototype,Math.sign,Promise,Reflect,Symbol,Symbol.iterator,Symbol.prototype,Symbol.toPrimitive,Symbol.toStringTag,Uint32Array,window.crypto,Object.assign,Object.getOwnPropertySymbols,Array.from,Set,BigInt,WeakMap,WeakRef,WeakSet"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=WeakRef,BigInt"></script>
 ```
 
-* Map is not supported in IE 10
-* Map.prototype() is not supported in IE 10
-* Math.sign() is not supported in IE 10
-* Promise is not supported in Opera Mobile 12.1, Opera Mini all, IE Mobile 10, IE 10, Blackberry Browser 7
-* Reflect is not supported in IE 10
-* Symbol.iterator() is not supported in IE 10
-* Symbol.prototype() is not supported in IE 10
-* Symbol.toPrimitive() is not supported in IE 10
-* Symbol.toStringTag() is not supported in IE 10
-* Uint32Array is not supported in IE Mobile 10, IE 10, Blackberry Browser 7
-* window\.crypto() is not supported in IE 10
-* Object.assign() is not supported in IE 10
-* Object.getOwnPropertySymbols() is not supported in IE 10
-* Array.from() is not supported in IE 10
-* Set is not supported in IE 10
-* Symbol is not supported in IE 10
-* BigInt is not supported in IE 10
-* WeakMap is not supported in IE 10
-* WeakRef is not supported in Opera 81, IE 10
-* WeakSet is not supported in IE 10
+* WeakRef is not supported in Opera 85, iOS Safari 12.2-12.5
+* BigInt is not supported in iOS Safari 12.2-12.5
 
 #### Bundler
 
@@ -469,8 +444,6 @@ If you are seeking permission to use these trademarks, then please [contact us](
 ##
 
 [npm]: https://www.npmjs.com/
-
-[yarn]: https://yarnpkg.com/
 
 [lad]: https://lad.js.org/
 

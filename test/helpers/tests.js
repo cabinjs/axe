@@ -58,6 +58,21 @@ module.exports = (test, logger = console) => {
       t.true(t.context[map[level]].calledWithMatch(message));
     });
 
+    test(`${name} level ${level} works with (err, { err }) concept`, (t) => {
+      t.context.axe[level](new Error('hmm'), { err: new Error('oops') });
+      const _level = level === 'log' ? 'error' : level;
+      t.true(
+        t.context[map[_level]].calledWith(
+          sinon.match.instanceOf(Error).and(sinon.match.has('message', 'hmm')),
+          sinon.match({
+            err: sinon.match
+              .instanceOf(Error)
+              .and(sinon.match.has('message', 'oops'))
+          })
+        )
+      );
+    });
+
     test(`${name} level ${level} works with meta`, (t) => {
       const message = `${level} works with meta`;
       t.context.axe[level](message, { user: { username: 'test' } });
@@ -165,16 +180,14 @@ module.exports = (test, logger = console) => {
       const error = new Error(`test ${level} error`);
       t.context.axe[level](error);
       const _level = level === 'log' ? 'error' : level;
-      if (map[_level] === 'error')
-        t.true(
-          t.context[map[_level]].calledWith(
-            sinon.match
-              .instanceOf(Error)
-              .and(sinon.match.has('name', error.name))
-              .and(sinon.match.has('message', error.message))
-          )
-        );
-      else t.true(t.context[map[_level]].calledWithMatch(error.message));
+      t.true(
+        t.context[map[_level]].calledWith(
+          sinon.match
+            .instanceOf(Error)
+            .and(sinon.match.has('name', error.name))
+            .and(sinon.match.has('message', error.message))
+        )
+      );
     });
 
     test(`${name} level ${level} allows four or more args`, (t) => {
