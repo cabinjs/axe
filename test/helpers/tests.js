@@ -1,5 +1,6 @@
 const { format } = require('util');
 const sinon = require('sinon');
+const parseErr = require('parse-err');
 
 const Axe = require('../../lib');
 const beforeEach = require('./before-each');
@@ -14,7 +15,7 @@ const map = {
   warn: 'warn',
   err: 'error',
   error: 'error',
-  fatal: 'error'
+  fatal: 'fatal'
 };
 
 module.exports = (test, logger = console) => {
@@ -53,24 +54,10 @@ module.exports = (test, logger = console) => {
 
   for (const level of levels) {
     test(`${name} level ${level} works`, (t) => {
-      const message = `test ${level} message`;
-      t.context.axe[level](message);
-      t.true(t.context[map[level]].calledWithMatch(message));
-    });
-
-    test(`${name} level ${level} works with (err, { err }) concept`, (t) => {
-      t.context.axe[level](new Error('hmm'), { err: new Error('oops') });
-      const _level = level === 'log' ? 'error' : level;
-      t.true(
-        t.context[map[_level]].calledWith(
-          sinon.match.instanceOf(Error).and(sinon.match.has('message', 'hmm')),
-          sinon.match({
-            err: sinon.match
-              .instanceOf(Error)
-              .and(sinon.match.has('message', 'oops'))
-          })
-        )
-      );
+      t.context.axe[level](`test ${level} message`);
+      t.deepEqual(t.context[map[level]].getCall(0).args, [
+        `test ${level} message`
+      ]);
     });
 
     test(`${name} level ${level} works with meta`, (t) => {
@@ -79,7 +66,7 @@ module.exports = (test, logger = console) => {
       t.true(t.context[map[level]].calledWithMatch(message));
     });
 
-    test(`${name} level ${level} works with meta and showMeta`, (t) => {
+    test(`${name} level ${level} works with meta and meta.show option`, (t) => {
       const message = `${level} works with meta`;
       const meta = { user: { username: 'test' } };
       t.context.axe[level](message, meta);
@@ -218,6 +205,208 @@ module.exports = (test, logger = console) => {
           t.context.axe.getNormalizedLevel(level),
           sinon.match({ message: false })
         )
+      );
+    });
+
+    test(`${name} level ${level} pre hook from config`, (t) => {
+      t.context.axe[level]('test prehookconfig');
+      t.true(
+        t.context[map[level]].calledWithMatch(`test ${level}prehookconfig`)
+      );
+    });
+
+    test(`${name} level ${level} post hook from config`, async (t) => {
+      t.context[`${level}PostConfigTest`] = [];
+      t.context.axe[level]('test posthookconfig');
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
+      t.is(t.context[`${level}PostConfigTest`][1], 'test posthookconfig');
+    });
+
+    test(`${name} level ${level} pre hook`, (t) => {
+      t.context.axe[level]('test prehookadded');
+      t.true(
+        t.context[map[level]].calledWithMatch(`test ${level}prehookadded`)
+      );
+    });
+
+    test(`${name} level ${level} post hook`, async (t) => {
+      t.context[`${level}PostTest`] = [];
+      t.context.axe[level]('test post hook');
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
+      t.is(t.context[`${level}PostTest`][1], 'test post hook');
+    });
+
+    test(`${name} level ${level} combined error with 2 args`, (t) => {
+      t.context.axe[level](new Error('hmm'), new Error('oops'));
+      const _level = level === 'log' ? 'error' : level;
+      t.is(t.context[map[_level]].getCall(0).args[0].name, 'CombinedError');
+      t.is(t.context[map[_level]].getCall(0).args[0].message, 'hmm; oops');
+    });
+
+    test(`${name} level ${level} combined error with message and meta.err`, (t) => {
+      const err = new Error('oops');
+      t.context.axe[level](new Error('hmm'), { err });
+      const _level = level === 'log' ? 'error' : level;
+      t.is(t.context[map[_level]].getCall(0).args[0].name, 'CombinedError');
+      t.is(t.context[map[_level]].getCall(0).args[0].message, 'hmm; oops');
+      t.deepEqual(
+        t.context[map[_level]].getCall(0).args[1].original_err,
+        parseErr(err)
+      );
+    });
+
+    test(`${name} level ${level} combined error with message (err), meta (err), and 1 additional arg`, (t) => {
+      const err = new Error('oops');
+      t.context.axe[level](new Error('hmm'), new Error('uh oh'), { err });
+      const _level = level === 'log' ? 'error' : level;
+      t.is(t.context[map[_level]].getCall(0).args[0].name, 'CombinedError');
+      t.is(t.context[map[_level]].getCall(0).args[0].message, 'hmm; uh oh');
+      t.is(t.context[map[_level]].getCall(0).args[1], undefined);
+    });
+
+    test(`${name} level ${level} combined error with message and 3 additional arg`, (t) => {
+      t.context.axe[level](
+        new Error('hmm'),
+        new Error('uh oh'),
+        new Error('foo bar'),
+        new Error('oops')
+      );
+      const _level = level === 'log' ? 'error' : level;
+      t.is(t.context[map[_level]].getCall(0).args[0].name, 'CombinedError');
+      t.is(
+        t.context[map[_level]].getCall(0).args[0].message,
+        'hmm; uh oh; foo bar; oops'
+      );
+    });
+
+    test(`${name} level ${level} combined error with 3 args`, (t) => {
+      t.context.axe[level](
+        new Error('hmm'),
+        new Error('uh oh'),
+        new Error('foo bar')
+      );
+      const _level = level === 'log' ? 'error' : level;
+      t.is(t.context[map[_level]].getCall(0).args[0].name, 'CombinedError');
+      t.is(
+        t.context[map[_level]].getCall(0).args[0].message,
+        'hmm; uh oh; foo bar'
+      );
+    });
+
+    test(`${name} level ${level} combined error with 3 args and message first`, (t) => {
+      t.context.axe[level]('hmm', new Error('uh oh'), new Error('foo bar'));
+      t.is(t.context[map[level]].getCall(0).args[0].name, 'CombinedError');
+      t.is(t.context[map[level]].getCall(0).args[0].message, 'uh oh; foo bar');
+    });
+
+    test(`${name} level ${level} combined error with 4 args`, (t) => {
+      t.context.axe[level](
+        new Error('hmm'),
+        new Error('uh oh'),
+        new Error('foo bar'),
+        new Error('beep')
+      );
+      const _level = level === 'log' ? 'error' : level;
+      t.is(t.context[map[_level]].getCall(0).args[0].name, 'CombinedError');
+      t.is(
+        t.context[map[_level]].getCall(0).args[0].message,
+        'hmm; uh oh; foo bar; beep'
+      );
+    });
+
+    test(`${name} level ${level} combined error with 4 args and message is not an error`, (t) => {
+      t.context.axe[level](
+        'hmm',
+        new Error('uh oh'),
+        new Error('foo bar'),
+        new Error('beep')
+      );
+      t.is(t.context[map[level]].getCall(0).args[0].name, 'CombinedError');
+      t.is(
+        t.context[map[level]].getCall(0).args[0].message,
+        'uh oh; foo bar; beep'
+      );
+    });
+
+    test(`${name} level ${level} combined error with 5 args`, (t) => {
+      t.context.axe[level](
+        new Error('hmm'),
+        new Error('uh oh'),
+        new Error('foo bar'),
+        new Error('beep'),
+        new Error('boop')
+      );
+      const _level = level === 'log' ? 'error' : level;
+      t.is(t.context[map[_level]].getCall(0).args[0].name, 'CombinedError');
+      t.is(
+        t.context[map[_level]].getCall(0).args[0].message,
+        'hmm; uh oh; foo bar; beep; boop'
+      );
+    });
+
+    test(`${name} level ${level} works with remappedFields`, (t) => {
+      t.context.axe[level]('test', {
+        remap: {
+          field: true
+        }
+      });
+      t.true(
+        t.context[map[level]].calledWith(
+          'test',
+          sinon.match({ remappedField: true })
+        )
+      );
+    });
+
+    test(`${name} level ${level} works with omittedFields`, (t) => {
+      t.context.axe[level]('test', {
+        beep: true
+      });
+      t.true(
+        t.context[map[level]].calledWith(
+          'test'
+          // nothing here because it's empty
+        )
+      );
+    });
+
+    test(`${name} level ${level} works with pickedFields`, (t) => {
+      t.context.axe[level]('test', {
+        foo: {
+          beep: true,
+          bar: true
+        }
+      });
+      t.true(
+        t.context[map[level]].calledWith('test', {
+          foo: {
+            bar: true
+          }
+        })
+      );
+    });
+
+    test(`${name} level ${level} works with omittedFields and pickedFields`, (t) => {
+      t.context.axe[level]('test', {
+        request: {
+          timestamp: 1,
+          headers: {
+            'X-Test': true
+          }
+        }
+      });
+      t.true(
+        t.context[map[level]].calledWith('test', {
+          request: {
+            headers: {
+              'X-Test': true
+            }
+          }
+        })
       );
     });
   }

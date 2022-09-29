@@ -6,6 +6,7 @@ module.exports = {
   ignore: ['config.js'],
   rules: {
     'n/prefer-global/process': 'off',
-    'prefer-object-spread': 'off'
+    'prefer-object-spread': 'off',
+    'unicorn/prefer-includes': 'off'
   }
 };

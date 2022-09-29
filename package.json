@@ -1,6 +1,6 @@
 {
   "name": "axe",
-  "description": "Logging add-on to send logs over HTTP to your server in Node and Browser environments. Works with any logger! Chop up your logs consistently! Made for Cabin and Lad.",
+  "description": "Axe is a logger-agnostic wrapper that normalizes logs regardless of argument style. Great for large development teams, old and new projects, and works with Pino, Bunyan, Winston, console, and more. It is lightweight, performant, highly-configurable, and automatically adds OS, CPU, and Git information to your logs. It supports hooks (useful for masking sensitive data) and dot-notation remapping, omitting, and picking of log metadata properties. Made for Forward Email, Lad, and Cabin.",
   "version": "9.0.0",
   "author": "Nick Baugh <niftylettuce@gmail.com> (http://niftylettuce.com)",
   "browser": {
@@ -11,20 +11,25 @@
   },
   "contributors": [
     "Nick Baugh <niftylettuce@gmail.com> (http://niftylettuce.com)",
-    "Alexis Tyler <xo@wvvw.me> (https://wvvw.me/)"
+    "Alexis Tyler <xo@wvvw.me> (https://wvvw.me/)",
+    "shadowgate15 (https://github.com/shadowgate15)",
+    "Spencer Snyder <sasnyde2@gmail.com> (https://spencersnyder.io)"
   ],
   "dependencies": {
     "@ladjs/format-util": "^1.0.4",
-    "boolean": "^3.2.0",
-    "console-polyfill": "^0.3.0",
-    "cuid": "^2.1.8",
-    "fast-safe-stringify": "^2.1.1",
+    "@strikeentco/get": "1.0.1",
+    "@strikeentco/set": "1.0.2",
+    "boolean": "3.2.0",
+    "console-polyfill": "0.3.0",
     "format-specifiers": "^1.0.0",
-    "iserror": "^0.0.2",
-    "lodash.omit": "^4.5.0",
+    "iserror": "0.0.2",
+    "maybe-combine-errors": "1.0.0",
+    "merge-options": "3.0.4",
+    "p-map-series": "2",
     "parse-app-info": "^4.0.3",
     "parse-err": "^0.0.12",
-    "superagent": "^8.0.0"
+    "pick-deep": "1.0.0",
+    "unset-value": "2.0.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.17.10",
@@ -111,16 +116,16 @@
   },
   "scripts": {
     "ava": "cross-env NODE_ENV=test ava",
-    "browserify": "browserify src/index.js -o dist/axe.js -s Axe -g [ babelify --configFile ./.dist.babelrc ]",
+    "browserify": "browserify src/index.js -o dist/axe.js -s Axe -g [ babelify --configFile ./.dist.babelrc.json ]",
     "build": "npm run build:clean && npm run build:lib && npm run build:dist",
     "build:clean": "rimraf lib dist",
     "build:dist": "npm run browserify && npm run minify",
-    "build:lib": "babel --config-file ./.lib.babelrc src --out-dir lib",
+    "build:lib": "babel --config-file ./.lib.babelrc.json src --out-dir lib",
     "lint": "xo --fix && remark . -qfo && fixpack",
     "lint-build": "npm run lint-lib && npm run lint-dist",
-    "lint-dist": "eslint --no-inline-config -c .dist.eslintrc dist",
-    "lint-lib": "eslint --no-inline-config -c .lib.eslintrc lib",
-    "minify": "cross-env NODE_ENV=production browserify src/index.js -o dist/axe.min.js -s Axe -g [ babelify --configFile ./.dist.babelrc ] -p tinyify",
+    "lint-dist": "eslint --no-inline-config -c .dist.eslintrc.json dist",
+    "lint-lib": "eslint --no-inline-config -c .lib.eslintrc.json lib",
+    "minify": "cross-env NODE_ENV=production browserify src/index.js -o dist/axe.min.js -s Axe -g [ babelify --configFile ./.dist.babelrc.json ] -p tinyify",
     "nyc": "cross-env NODE_ENV=test nyc ava",
     "prepare": "husky install",
     "pretest": "npm run lint",

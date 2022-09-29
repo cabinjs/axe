@@ -1,15 +1,18 @@
 // eslint-disable-next-line import/no-unassigned-import
 require('console-polyfill');
 
-const cuid = require('cuid');
+const combine = require('maybe-combine-errors');
 const format = require('@ladjs/format-util');
 const formatSpecifiers = require('format-specifiers');
+const get = require('@strikeentco/get');
 const isError = require('iserror');
-const omit = require('lodash.omit');
+const mergeOptions = require('merge-options');
+const pMapSeries = require('p-map-series');
 const parseAppInfo = require('parse-app-info');
 const parseErr = require('parse-err');
-const safeStringify = require('fast-safe-stringify');
-const superagent = require('superagent');
+const pickDeep = require('pick-deep');
+const set = require('@strikeentco/set');
+const unset = require('unset-value');
 const { boolean } = require('boolean');
 
 const pkg = require('../package.json');
@@ -17,8 +20,43 @@ const pkg = require('../package.json');
 const omittedLoggerKeys = new Set(['config', 'log']);
 const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
 const aliases = { warning: 'warn', err: 'error' };
-const endpoint = 'https://api.cabinjs.com';
 const levelError = `\`level\` invalid, must be: ${levels.join(', ')}`;
+
+// <https://github.com/sindresorhus/is-plain-obj/blob/main/index.js>
+function isPlainObject(value) {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const prototype = Object.getPrototypeOf(value);
+  return (
+    (prototype === null ||
+      prototype === Object.prototype ||
+      Object.getPrototypeOf(prototype) === null) &&
+    !(Symbol.toStringTag in value) &&
+    !(Symbol.iterator in value)
+  );
+}
+
+// <https://github.com/GeenenTijd/dotify/blob/master/dotify.js>
+function dotifyToArray(obj) {
+  const res = [];
+  function recurse(obj, current) {
+    for (const key of Object.keys(obj)) {
+      const value = obj[key];
+      const newKey = current ? current + '.' + key : key; // joined key with dot
+      // if (value && typeof value === 'object' && !(value instanceof Date) && !ObjectID.isValid(value)) {
+      if (isPlainObject(value)) {
+        recurse(value, newKey); // it's a nested object, so do it again
+      } else {
+        res.push(newKey);
+      }
+    }
+  }
+
+  recurse(obj);
+  return res;
+}
 
 // <https://stackoverflow.com/a/43233163>
 function isEmpty(value) {
@@ -50,49 +88,58 @@ function isFunction(value) {
   return typeof value === 'function';
 }
 
-function isBoolean(value) {
-  return typeof value === 'boolean';
-}
-
 class Axe {
   constructor(config = {}) {
-    this.config = Object.assign(
+    const remappedFields = {};
+    if (process.env.AXE_REMAPPED_META_FIELDS) {
+      const arr = process.env.AXE_REMAPPED_META_FIELDS.split(',').map((v) =>
+        v.split(':')
+      );
+      for (const [prop, value] of arr) {
+        remappedFields[prop] = value;
+      }
+    }
+
+    this.config = mergeOptions(
       {
-        key: '',
-        endpoint,
-        headers: {},
-        timeout: 5000,
-        retry: 3,
-        showStack: process.env.SHOW_STACK
-          ? boolean(process.env.SHOW_STACK)
+        showStack: process.env.AXE_SHOW_STACK
+          ? boolean(process.env.AXE_SHOW_STACK)
           : true,
-        meta: {
-          show: process.env.SHOW_META ? boolean(process.env.SHOW_META) : true,
-          showApp: process.env.SHOW_META_APP
-            ? boolean(process.env.SHOW_META_APP)
-            : false,
-          omittedFields: process.env.OMIT_META_FIELDS
-            ? process.env.OMIT_META_FIELDS.split(',').map((s) => s.trim())
-            : []
-        },
+        meta: Object.assign(
+          {
+            show: process.env.AXE_SHOW_META
+              ? boolean(process.env.AXE_SHOW_META)
+              : true,
+            remappedFields,
+            omittedFields: process.env.AXE_OMIT_META_FIELDS
+              ? process.env.AXE_OMIT_META_FIELDS.split(',').map((s) => s.trim())
+              : ['level', 'err', 'app', 'args'],
+            pickedFields: process.env.AXE_PICK_META_FIELDS
+              ? process.env.AXE_PICK_META_FIELDS.split(',').map((s) => s.trim())
+              : [],
+            cleanupRemapping: true
+          },
+          typeof config.meta === 'object' ? config.meta : {}
+        ),
+        version: pkg.version,
         silent: false,
         logger: console,
         name: false,
         level: 'info',
         levels: ['info', 'warn', 'error', 'fatal'],
-        // TODO: if user specifies `key` and it is `process.platform === 'browser' || process.browser || env === 'production'` then set `capture` to `true`
-        capture: false,
-        callback: false,
-        appInfo: process.env.APP_INFO ? boolean(process.env.APP_INFO) : true
+        appInfo: process.env.AXE_APP_INFO
+          ? boolean(process.env.AXE_APP_INFO)
+          : true,
+        hooks: Object.assign(
+          {
+            pre: [],
+            post: []
+          },
+          typeof config.hooks === 'object' ? config.hooks : {}
+        )
       },
       config
     );
-
-    // For backwards compatability
-    if (this.config.showMeta) {
-      this.config.meta.show = this.config.showMeta;
-      delete this.config.showMeta;
-    }
 
     this.appInfo = this.config.appInfo
       ? isFunction(parseAppInfo)
@@ -112,15 +159,27 @@ class Axe {
 
     // Bind helper functions for each log level
     for (const element of levels) {
+      // Ensure function exists in logger passed
+      if (typeof this.config.logger[element] !== 'function') {
+        if (element === 'fatal') {
+          this.config.logger.fatal =
+            this.config.logger.error ||
+            this.config.logger.info ||
+            this.config.logger.log;
+        } else {
+          this.config.logger[element] =
+            this.config.logger.info || this.config.logger.log;
+        }
+      }
+
+      // Bind log handler which normalizes args and populates meta
       this[element] = (...args) =>
         this.log(element, ...Array.prototype.slice.call(args));
     }
 
-    // We could have used `auto-bind` but it's not compiled for browser
     this.setLevel = this.setLevel.bind(this);
     this.getNormalizedLevel = this.getNormalizedLevel.bind(this);
     this.setName = this.setName.bind(this);
-    this.setCallback = this.setCallback.bind(this);
 
     // Set the logger name
     if (this.config.name) this.setName(this.config.name);
@@ -131,14 +190,25 @@ class Axe {
     // Aliases
     this.err = this.error;
     this.warning = this.warn;
-  }
 
-  setCallback(callback) {
-    this.config.callback = callback;
+    // Pre and Post Hooks
+    this.pre = function (level, fn) {
+      this.config.hooks.pre.push(function (_level, ...args) {
+        if (level !== _level) return [...args];
+        return fn(...args);
+      });
+    };
+
+    this.post = function (level, fn) {
+      this.config.hooks.post.push(function (_level, ...args) {
+        if (level !== _level) return [...args];
+        return fn(...args);
+      });
+    };
   }
 
   setLevel(level) {
-    if (!isString(level) || !levels.includes(level))
+    if (!isString(level) || levels.indexOf(level) === -1)
       throw new Error(levelError);
     // Support signale logger and other loggers that use `logLevel`
     if (isString(this.config.logger.logLevel))
@@ -152,7 +222,7 @@ class Axe {
   getNormalizedLevel(level) {
     if (!isString(level)) return 'info';
     if (isString(aliases[level])) return aliases[level];
-    if (!levels.includes(level)) return 'info';
+    if (levels.indexOf(level) === -1) return 'info';
     return level;
   }
 
@@ -166,6 +236,7 @@ class Axe {
   // eslint-disable-next-line complexity
   log(level, message, meta, ...args) {
     const originalArgs = [];
+    const errors = [];
     if (!isUndefined(level)) originalArgs.push(level);
     if (!isUndefined(message)) originalArgs.push(message);
     if (!isUndefined(meta)) originalArgs.push(meta);
@@ -182,12 +253,15 @@ class Axe {
       meta = message;
       message = level;
       level = 'error';
-    } else if (!isString(level) || !levels.includes(level)) {
+    } else if (!isString(level) || levels.indexOf(level) === -1) {
       meta = message;
       message = level;
       level = this.getNormalizedLevel(level);
       modifier = -1;
     }
+
+    // Return early if it is not a valid logging level
+    if (config.levels.indexOf(level) === -1) return;
 
     // Bunyan support (meta, message, ...args)
     let isBunyan = false;
@@ -214,15 +288,23 @@ class Axe {
       meta = { message };
       message = level;
     } else if (!isBunyan && originalArgs.length >= 4 + modifier) {
-      // If there are four or more args
-      // then infer to use util.format on everything
-      message = format(...originalArgs.slice(1 + modifier));
+      message = undefined;
+
       meta = {};
+      const messages = [];
+      for (const arg of originalArgs) {
+        if (isError(arg)) errors.push(arg);
+        else if (isString(arg)) messages.push(arg);
+      }
+
+      if (errors.length === 0 && messages.length > 0)
+        message = format(...messages);
+      else if (errors.length > 0 && level === 'log') level = 'error';
     } else if (
       !isBunyan &&
       originalArgs.length === 3 + modifier &&
       isString(message) &&
-      formatSpecifiers.some((t) => message.includes(t))
+      formatSpecifiers.some((t) => message.indexOf(t) !== -1)
     ) {
       // Otherwise if there are three args and if the `message` contains
       // a placeholder token (e.g. '%s' or '%d' - see above `formatSpecifiers` variable)
@@ -231,8 +313,8 @@ class Axe {
       meta = {};
     } else if (!isError(message)) {
       if (isError(meta)) {
-        meta = { err: parseErr(meta) };
-        // } else if (!isPlainObject(meta) && !isUndefined(meta) && !isNull(meta)) {
+        errors.push(meta);
+        meta = {};
       } else if (!isObject(meta) && !isUndefined(meta) && !isNull(meta)) {
         // If the `meta` variable passed was not an Object then convert it
         message = format(message, meta);
@@ -243,87 +325,50 @@ class Axe {
         // (as opposed to using something like fast-json-stringify)
         message = format(message);
       }
+    } else if (isError(meta)) {
+      errors.push(meta);
+      // handle additional args
+      for (const arg of originalArgs.slice(2 + modifier)) {
+        // should skip this better with slice and modifier adjustment
+        if (meta === arg) continue;
+        if (isError(arg)) errors.push(arg);
+      }
+
+      meta = {};
     }
 
-    // If (!isPlainObject(meta)) meta = {};
-    if (!isUndefined(meta) && !isObject(meta)) meta = { meta };
+    if (!isUndefined(meta) && !isObject(meta)) meta = { original_meta: meta };
     else if (!isObject(meta)) meta = {};
 
-    const hadErrorInMeta = isObject(meta.err);
-
-    let error;
     if (isError(message)) {
-      error = message;
-      if (!hadErrorInMeta) meta.err = parseErr(error);
-      ({ message } = message);
-    } else if (isError(meta.err)) {
-      error = meta.err;
+      errors.unshift(message);
+      message = undefined;
     }
 
-    // Omit `callback` from `meta` if it was passed
-    const callback =
-      isFunction(config.callback) &&
-      (!isBoolean(meta.callback) || meta.callback);
-    meta = omit(meta, ['callback']);
+    //
+    // rewrite `meta.err` to `meta.original_err` for consistency
+    // (in case someone has an object with `.err` property on it with an error)
+    //
+    if (isObject(meta.err)) {
+      if (isError(meta.err)) errors.push(meta.err);
+      meta.original_err = isError(meta.err) ? parseErr(meta.err) : meta.err;
+    }
+
+    let err;
+    if (errors.length > 0) {
+      err = combine(errors);
+      meta.err = parseErr(err);
+      if (!isString(message)) message = err.message;
+    }
+
+    // Set `args` prop with original arguments passed
+    meta.args = originalArgs;
 
     // Set default level on meta
     meta.level = level;
 
     // Add `app` object to metadata
     if (this.appInfo) meta.app = this.appInfo;
-
-    // Set the body used for returning with and sending logs
-    // (and also remove circular references)
-    const body = safeStringify({ message, meta });
-
-    // Send to Cabin or other logging service here the `message` and `meta`
-    if (
-      config.capture &&
-      config.levels.includes(level) &&
-      (!isError(error) || !error._captureFailed)
-    ) {
-      // If the user didn't specify a key
-      // and they are using the default endpoint
-      // then we should throw an error to them
-      if (config.endpoint === endpoint && !config.key)
-        throw new Error(
-          "Cabin API key required (e.g. `{ key: 'YOUR-CABIN-API-KEY' })`)\n<https://cabinjs.com>"
-        );
-
-      // Capture the log over HTTP
-      const request = superagent
-        .post(config.endpoint)
-        .set('X-Request-Id', cuid())
-        .timeout(config.timeout);
-
-      if (!process.browser) request.set('User-Agent', `axe/${pkg.version}`);
-
-      // Basic auth (e.g. Cabin API key)
-      if (config.key) request.auth(config.key);
-
-      // Set headers if any
-      if (!isEmpty(config.headers)) request.set(config.headers);
-
-      request
-        .type('application/json')
-        .send(body)
-        .retry(config.retry)
-        .end((error_) => {
-          if (error_) {
-            error_._captureFailed = true;
-            this.config.logger.error(error_);
-          }
-        });
-    }
-
-    // Custom callback function (e.g. Slack message)
-    if (callback) config.callback(level, message, meta);
-
-    // Suppress logs if it was silent
-    if (config.silent) return body;
-
-    // Return early if it is not a valid logging level
-    if (!config.levels.includes(level)) return body;
 
     //
     // determine log method to use
@@ -334,34 +379,119 @@ class Axe {
     //
     // and fatal should use error (e.g. in browser)
     //
-    let method = level;
-    if (modifier === -1) method = 'log';
-    else if (level === 'fatal') method = 'error';
+    const method = modifier === -1 ? 'log' : level;
 
-    // If there was meta information then output it
-    // setup ommitted fields
-    const omittedFields = [...this.config.meta.omittedFields];
-    omittedFields.push('level');
-    if (!hadErrorInMeta) omittedFields.push('err');
+    //
+    // NOTE: using lodash _.omit and _.pick would have been _very slow_
+    //
+    // const omittedAndPickedFields = {
+    //   ..._.omit(meta, this.config.meta.omittedFields),
+    //   ..._.pick(meta, this.config.meta.pickedFields)
+    // };
+    //
+    // also we don't want to mutate anything in `meta`
+    // and ideally we only want to pick exactly what we need
+    // (and not have two operations, one for omit, and one for pick)
+    //
 
-    // Omit app is configured
-    if (!this.config.meta.showApp) omittedFields.push('app');
-
-    const omitted = omit(meta, omittedFields);
-
-    // Show stack trace if necessary (along with any metadata)
-    if (isError(error) && config.showStack) {
-      if (!config.meta.show || isEmpty(omitted))
-        this.config.logger[method](error);
-      else this.config.logger[method](error, omitted);
-    } else if (!config.meta.show || isEmpty(omitted)) {
-      this.config.logger[method](message);
-    } else {
-      this.config.logger[method](message, omitted);
+    if (!isEmpty(this.config.meta.remappedFields)) {
+      for (const key of Object.keys(this.config.meta.remappedFields)) {
+        set(meta, this.config.meta.remappedFields[key], get(meta, key));
+        unset(meta, key);
+        // cleanup empty objects after remapping
+        if (this.config.meta.cleanupRemapping) {
+          const index = key.lastIndexOf('.');
+          if (index === -1) continue;
+          const parentKey = key.slice(0, index);
+          if (isEmpty(get(meta, parentKey))) unset(meta, parentKey);
+        }
+      }
     }
 
-    // Return the parsed body in case we need it
-    return body;
+    if (
+      !isEmpty(this.config.meta.omittedFields) ||
+      !isEmpty(this.config.meta.pickedFields)
+    ) {
+      const dotified = dotifyToArray(meta);
+      // dotified = [
+      //   'err.name',
+      //   'err.message',
+      //   'err.stack',
+      //   'level',
+      //   'app.name',
+      //   'app.version',
+      //   'app.node',
+      //   'app.hash',
+      //   // ...
+      // ]
+
+      if (!isEmpty(this.config.meta.omittedFields)) {
+        for (const prop of this.config.meta.omittedFields) {
+          // <https://stackoverflow.com/a/9882349>
+          let i = dotified.length;
+          while (i--) {
+            if (dotified[i] === prop || dotified[i].indexOf(`${prop}.`) === 0)
+              dotified.splice(i, 1);
+          }
+        }
+      }
+
+      if (!isEmpty(this.config.meta.pickedFields)) {
+        for (const prop of this.config.meta.pickedFields) {
+          // response.headers.boop
+          // response.headers.beep
+          // response.body
+          // response.text
+          // response
+          //
+          // so we need to split by the first period and omit any keys from dotified starting with it
+          const index = prop.indexOf('.');
+          const key = prop.slice(0, index + 1);
+          if (index !== -1) {
+            let i = dotified.length;
+            while (i--) {
+              if (dotified[i].indexOf(key) === 0) dotified.splice(i, 1);
+            }
+          }
+
+          // finally add it if it did not already exist
+          if (dotified.indexOf(prop) === -1) dotified.push(prop);
+        }
+      }
+
+      // now we call pick-deep using the final array
+      meta = pickDeep(meta, dotified);
+    }
+
+    // pre-hooks
+    for (const hook of this.config.hooks.pre) {
+      [err, message, meta] = hook(method, err, message, meta);
+    }
+
+    // only invoke logger methods if it was not silent
+    if (!config.silent) {
+      // Show stack trace if necessary (along with any metadata)
+      if (isError(err) && config.showStack) {
+        if (!config.meta.show || isEmpty(meta)) {
+          this.config.logger[method](err);
+        } else {
+          this.config.logger[method](err, meta);
+        }
+      } else if (!config.meta.show || isEmpty(meta)) {
+        this.config.logger[method](message);
+      } else {
+        this.config.logger[method](message, meta);
+      }
+    }
+
+    // post-hooks
+    pMapSeries(this.config.hooks.post, (hook) =>
+      hook(method, err, message, meta)
+    )
+      .then()
+      .catch((err) => {
+        this.config.logger.error(err);
+      });
   }
 }
 

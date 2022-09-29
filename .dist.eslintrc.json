@@ -6,6 +6,9 @@
     "amd": true,
     "es6": true
   },
+  "parserOptions": {
+    "ecmaVersion": "2017"
+  },
   "plugins": ["compat"],
   "rules": {
     "compat/compat": "error",
@@ -23,14 +26,14 @@
     "no-sparse-arrays": "off",
     "no-undef": "off",
     "no-prototype-builtins": "off",
-    "no-unsafe-finally": "off"
+    "no-unsafe-finally": "off",
+    "no-inner-declarations": "off"
   },
   "globals": {
   },
   "settings": {
     "polyfills": [
-      "WeakRef",
-      "BigInt"
+      "Promise"
     ]
   }
 }

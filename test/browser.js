@@ -29,8 +29,3 @@ test('should create a new Axe instance', (t) => {
   t.true(_.isObject(axe));
   axe.info('hello');
 });
-
-test('capture should be false in browser', (t) => {
-  const axe = new dom.window.Axe();
-  t.false(axe.config.capture);
-});
