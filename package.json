@@ -60,7 +60,7 @@
     "rimraf": "^3.0.2",
     "signale": "^1.4.0",
     "sinon": "^14.0.0",
-    "tinyify": "^3.0.0",
+    "tinyify": "3.0.0",
     "xo": "^0.50.0"
   },
   "engines": {
