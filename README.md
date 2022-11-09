@@ -783,7 +783,7 @@ We recommend [superagent](https://github.com/visionmedia/superagent), however th
          .set('X-Request-Id', cuid()) // normalize server/browser request id formatting
          .timeout(5000);
 
-       request.set('User-Agent', `axe/${logger.version}`);
+       request.set('User-Agent', `axe/${logger.config.version}`);
 
        // add basic auth header (e.g. if you use Cabin)
        // if (config.key) request.auth('INSERT-YOUR-KEY');
