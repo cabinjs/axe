@@ -34,6 +34,7 @@
 * [Examples](#examples)
   * [Send Logs to HTTP Endpoint](#send-logs-to-http-endpoint)
   * [Send Logs to Slack](#send-logs-to-slack)
+  * [Send Logs to Sentry](#send-logs-to-sentry)
   * [Suppress Logger Data](#suppress-logger-data)
 * [Contributors](#contributors)
 * [License](#license)
@@ -845,7 +846,7 @@ This is an example of using hooks to send a message to Slack with logs of the "f
 
    // create an instance of the Slack Web Client API for posting messages
    const web = new WebClient('INSERT-YOUR-TOKEN', {
-     // <https://slack.dev/node-slack-sdk/web-api#logging>
+     // https://slack.dev/node-slack-sdk/web-api#logging
      logger,
      logLevel: logger.config.level
    });
@@ -911,6 +912,42 @@ This is an example of using hooks to send a message to Slack with logs of the "f
    // test out the slack integration
    logger.error(new Error('Uh oh something went wrong!'));
    ```
+
+### Send Logs to Sentry
+
+See below example and the reference at <https://docs.sentry.io/platforms/node/> for more information.
+
+```sh
+npm install @sentry/node
+```
+
+```js
+const Axe = require('axe');
+const Sentry = require('@sentry/node');
+
+const logger = new Axe();
+
+Sentry.init({
+  // TODO: input your DSN here from Sentry once you're logged in at:
+  // https://docs.sentry.io/platforms/node/#configure
+  dsn: "https://examplePublicKey@o0.ingest.sentry.io/0",
+});
+
+for (const level of logger.config.levels) {
+  logger.post(level, (next, message, meta) => {
+    // https://docs.sentry.io/clients/node/usage/
+    if (message instanceof Error) {
+      Sentry.captureException(message, meta);
+    } else {
+      Sentry.captureMessage(message, meta);
+    }
+    next();
+  });
+}
+
+// do stuff
+logger.error(new Error('uh oh'));
+```
 
 ### Suppress Logger Data
 
