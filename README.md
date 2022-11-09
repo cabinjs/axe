@@ -781,9 +781,8 @@ We recommend [superagent](https://github.com/visionmedia/superagent), however th
        const request = superagent
          .post('https://api.cabinjs.com')
          .set('X-Request-Id', cuid()) // normalize server/browser request id formatting
+         .set('X-Axe-Version', logger.config.version)
          .timeout(5000);
-
-       request.set('User-Agent', `axe/${logger.config.version}`);
 
        // add basic auth header (e.g. if you use Cabin)
        // if (config.key) request.auth('INSERT-YOUR-KEY');
