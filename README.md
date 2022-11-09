@@ -425,37 +425,35 @@ See [Browser](#browser-1) usage below for more information.
   ```
 
   ```sh
-  and_chr 102
-  and_ff 101
-  and_qq 10.4
-  and_uc 12.12
-  android 101
-  chrome 103
-  chrome 102
-  chrome 101
-  chrome 100
-  edge 103
-  edge 102
-  edge 101
-  firefox 101
-  firefox 100
-  firefox 91
+  and_chr 107
+  and_ff 106
+  and_qq 13.1
+  and_uc 13.4
+  android 107
+  chrome 107
+  chrome 106
+  chrome 105
+  edge 107
+  edge 106
+  edge 105
+  firefox 106
+  firefox 105
+  firefox 102
+  ios_saf 16.1
+  ios_saf 16.0
+  ios_saf 15.6
   ios_saf 15.5
-  ios_saf 15.4
-  ios_saf 15.2-15.3
-  ios_saf 15.0-15.1
   ios_saf 14.5-14.8
-  ios_saf 14.0-14.4
-  ios_saf 12.2-12.5
   kaios 2.5
   op_mini all
   op_mob 64
-  opera 86
-  opera 85
-  safari 15.5
-  safari 15.4
+  opera 91
+  opera 90
+  safari 16.1
+  safari 16.0
+  safari 15.6
+  samsung 18.0
   samsung 17.0
-  samsung 16.0
   ```
 
 ### Node
