@@ -399,21 +399,21 @@ See [Browser](#browser-1) usage below for more information.
 
 ### Options
 
-| Property                | Type              | Default Value                     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |   |
-| ----------------------- | ----------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | - |
-| `showStack`             | Boolean           | `true`                            | Attempts to parse a boolean value from `process.env.AXE_SHOW_STACK`). **If this value is `true`, then if `message` is an instance of an Error, it will be invoked as the first argument to logger methods. If this is `false`, then only the `err.message` will be invoked as the first argument to logger methods.** Basically if `true` it will call `logger.method(err)` and if `false` it will call `logger.method(err.message)`. If you pass `err` as the first argument to a logger method, then it will show the stack trace via `err.stack` typically. |   |
-| `meta`                  | Object            | See below                         | Stores all meta config information (see the following nested properties below).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |   |
-| `meta.show`             | Boolean           | `true`                            | Attempts to parse a boolean value from `process.env.AXE_SHOW_META` – meaning you can pass a flag `AXE_SHOW_META=true node app.js` when needed for debugging), whether or not to output metadata to logger methods. If set to `false`, then fields will not be omitted nor picked; the entire meta object will be hidden from logger output.                                                                                                                                                                                                                    |   |
-| `meta.remappedFields`   | Object            | `{}`                              | Attempts to parse an Object mapping from `process.env.AXE_REMAPPED_META_FIELDS` (`,` and `:` delimited, e.g. `REMAPPED_META_FIELDS=foo:bar,beep.boop:beepBoop` to remap `meta.foo` to `meta.bar` and `meta.beep.boop` to `meta.beepBoop`). Note that this will clean up empty objects by default unless you set the option `meta.cleanupRemapping` to `false`). Supports dot-notation.                                                                                                                                                                         |   |
-| `meta.omittedFields`    | Array             | `['level','err','app', 'args']`   | Attempts to parse an array value from `process.env.AXE_OMIT_META_FIELDS` (`,` delimited) - meaning you can pass a flag `OMIT_META_FIELDS=user,id node app.js`), determining which fields to omit in the metadata passed to logger methods. Supports dot-notation.                                                                                                                                                                                                                                                                                              |   |
-| `meta.pickedFields`     | Array             | `[]`                              | Attempts to parse an array value from `process.env.AXE_PICK_META_FIELDS` (`,` delimited) - meaning you can pass a flag, e.g. `PICK_META_FIELDS=request.headers,response.headers node app.js` which would pick from `meta.request` and `meta.response` *only* `meta.request.headers` and `meta.response.headers`), **This takes precedence after fields are omitted, which means this acts as a whitelist.** Supports dot-notation.                                                                                                                             |   |
-| `meta.cleanupRemapping` | Boolean           | `true`                            | Whether or not to cleanup empty objects after remapping operations are completed)                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |   |
-| `silent`                | Boolean           | `false`                           | Whether or not to invoke logger methods. Pre and post hooks will still run even if this option is set to `false`.                                                                                                                                                                                                                                                                                                                                                                                                                                              |   |
-| `logger`                | Object            | `console`                         | Defaults to `console` with [console-polyfill][] added automatically, though **you can bring your own logger**. See [custom logger](#custom-logger) – you can pass an instance of `pino`, `signale`, `winston`, `bunyan`, etc.                                                                                                                                                                                                                                                                                                                                  |   |
-| `name`                  | String or Boolean | `false`                           | The default name for the logger (defaults to `false`, which does not set `logger.name`). If you wish to pass a name such as `os.hostname()`, then set `name: os.hostname()` – this is useful if you are using a logger like `pino` which prefixes log output with the name set here.                                                                                                                                                                                                                                                                           |   |
-| `level`                 | String            | `"info"`                          | The default level of logging to invoke `logger` methods for (defaults to `info`, which includes all logs including info and higher in severity (e.g. `info`, `warn`, `error`, `fatal`)                                                                                                                                                                                                                                                                                                                                                                         |   |
-| `levels`                | Array             | `['info','warn','error','fatal']` | An Array of logging levels to support. You usually shouldn't change this unless you want to prevent logger methods from being invoked or prevent hooks from being run for a certain log level. If an invalid log level is attempted to be invoked, and if it is not in this Array, then no hooks and no logger methods will be invoked.                                                                                                                                                                                                                        |   |
-| `appInfo`               | Boolean           | `true`                            | Attempts to parse a boolean value from `process.env.AXE_APP_INFO`) - whether or not to parse application information (using [parse-app-info][]).                                                                                                                                                                                                                                                                                                                                                                                                               |   |
+| Property                | Type              | Default Value                                                                                             | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |   |
+| ----------------------- | ----------------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | - |
+| `showStack`             | Boolean           | `true`                                                                                                    | Attempts to parse a boolean value from `process.env.AXE_SHOW_STACK`). **If this value is `true`, then if `message` is an instance of an Error, it will be invoked as the first argument to logger methods. If this is `false`, then only the `err.message` will be invoked as the first argument to logger methods.** Basically if `true` it will call `logger.method(err)` and if `false` it will call `logger.method(err.message)`. If you pass `err` as the first argument to a logger method, then it will show the stack trace via `err.stack` typically. |   |
+| `meta`                  | Object            | See below                                                                                                 | Stores all meta config information (see the following nested properties below).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |   |
+| `meta.show`             | Boolean           | `true`                                                                                                    | Attempts to parse a boolean value from `process.env.AXE_SHOW_META` – meaning you can pass a flag `AXE_SHOW_META=true node app.js` when needed for debugging), whether or not to output metadata to logger methods. If set to `false`, then fields will not be omitted nor picked; the entire meta object will be hidden from logger output.                                                                                                                                                                                                                    |   |
+| `meta.remappedFields`   | Object            | `{}`                                                                                                      | Attempts to parse an Object mapping from `process.env.AXE_REMAPPED_META_FIELDS` (`,` and `:` delimited, e.g. `REMAPPED_META_FIELDS=foo:bar,beep.boop:beepBoop` to remap `meta.foo` to `meta.bar` and `meta.beep.boop` to `meta.beepBoop`). Note that this will clean up empty objects by default unless you set the option `meta.cleanupRemapping` to `false`). Supports dot-notation.                                                                                                                                                                         |   |
+| `meta.omittedFields`    | Array             | `['level','err','app', 'args']`                                                                           | Attempts to parse an array value from `process.env.AXE_OMIT_META_FIELDS` (`,` delimited) - meaning you can pass a flag `OMIT_META_FIELDS=user,id node app.js`), determining which fields to omit in the metadata passed to logger methods. Supports dot-notation.                                                                                                                                                                                                                                                                                              |   |
+| `meta.pickedFields`     | Array             | `[]`                                                                                                      | Attempts to parse an array value from `process.env.AXE_PICK_META_FIELDS` (`,` delimited) - meaning you can pass a flag, e.g. `PICK_META_FIELDS=request.headers,response.headers node app.js` which would pick from `meta.request` and `meta.response` *only* `meta.request.headers` and `meta.response.headers`), **This takes precedence after fields are omitted, which means this acts as a whitelist.** Supports dot-notation.                                                                                                                             |   |
+| `meta.cleanupRemapping` | Boolean           | `true`                                                                                                    | Whether or not to cleanup empty objects after remapping operations are completed)                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |   |
+| `silent`                | Boolean           | `false`                                                                                                   | Whether or not to invoke logger methods. Pre and post hooks will still run even if this option is set to `false`.                                                                                                                                                                                                                                                                                                                                                                                                                                              |   |
+| `logger`                | Object            | `console`                                                                                                 | Defaults to `console` with [console-polyfill][] added automatically, though **you can bring your own logger**. See [custom logger](#custom-logger) – you can pass an instance of `pino`, `signale`, `winston`, `bunyan`, etc.                                                                                                                                                                                                                                                                                                                                  |   |
+| `name`                  | String or Boolean | `false` if `NODE_ENV` is `"development"` otherwise the value of `process.env.HOSTNAME` or `os.hostname()` | The default name for the logger (defaults to `false` in development environments, which does not set `logger.name`) – this is useful if you are using a logger like `pino` which prefixes log output with the name set here.                                                                                                                                                                                                                                                                                                                                   |   |
+| `level`                 | String            | `"info"`                                                                                                  | The default level of logging to invoke `logger` methods for (defaults to `info`, which includes all logs including info and higher in severity (e.g. `info`, `warn`, `error`, `fatal`)                                                                                                                                                                                                                                                                                                                                                                         |   |
+| `levels`                | Array             | `['info','warn','error','fatal']`                                                                         | An Array of logging levels to support. You usually shouldn't change this unless you want to prevent logger methods from being invoked or prevent hooks from being run for a certain log level. If an invalid log level is attempted to be invoked, and if it is not in this Array, then no hooks and no logger methods will be invoked.                                                                                                                                                                                                                        |   |
+| `appInfo`               | Boolean           | `true`                                                                                                    | Attempts to parse a boolean value from `process.env.AXE_APP_INFO`) - whether or not to parse application information (using [parse-app-info][]).                                                                                                                                                                                                                                                                                                                                                                                                               |   |
 
 ### Supported Platforms
 
@@ -584,7 +584,7 @@ Please see Cabin's documentation for [stack traces and error handling](https://g
 
 ### Hooks
 
-You can add synchronous "pre" hooks and/or asynchronous/synchronous "post" hooks with Axe. Both pre and post hooks accept four arguments (`level`, `err`, `message`, and `meta`). Pre hooks are required to be synchronous.
+You can add synchronous "pre" hooks and/or asynchronous/synchronous "post" hooks with Axe. Both pre and post hooks accept four arguments (`level`, `err`, `message`, and `meta`). Pre hooks are required to be synchronous.  Pre hooks also run before any metadata is picked, omitted, remapped, etc.
 
 Both pre and post hooks execute serially – and while pre hooks are blocking, post-hooks will run in the background after logger methods are invoked (you can have a post hook that's a Promise or async function).
 
@@ -736,80 +736,61 @@ This is an example of using hooks to send a POST request to an HTTP endpoint wit
 
 We recommend [superagent](https://github.com/visionmedia/superagent), however there are plenty of alternatives such as [axios](https://github.com/axios/axios) and [ky](https://github.com/sindresorhus/ky).
 
-1. You will need to install the `superagent`, `cuid`, and `fast-safe-stringify` packages:
+1. You will also need to install additional packages:
 
    ```sh
-   npm install superagent cuid fast-safe-stringify
+   npm install axe fast-safe-stringify cuid superagent
    ```
 
-2. Implementation example is provided below:
+2. Implementation example is provided below (and you can also refer to the [Forward Email][forward-email-code] code base):
 
    ```js
-   const os = require('os');
-
    const Axe = require('axe');
-   const superagent = require('superagent');
-   const cuid = require('cuid');
    const safeStringify = require('fast-safe-stringify');
+   const cuid = require('cuid');
+   const superagent = require('superagent');
 
-   // create our application logger that uses hooks
-   const logger = new Axe({
-     logger: console, // optional (e.g. pino, signale, consola),
-     level: 'info', // optional (defaults to info)
-     name: process.env.HOSTNAME || os.hostname() // optional
-   });
+   const logger = new Axe();
 
-   async function hook(next, message, meta) {
+   // <https://github.com/cabinjs/axe/#send-logs-to-http-endpoint>
+   async function hook(err, message, meta) {
      //
      // return early if we wish to ignore this
      // (this prevents recursion; see end of this fn)
      //
-     if (meta.ignore_emit) return next();
+     if (meta.ignore_hook) return;
 
      try {
-       //
-       // set the body used in the HTTP request to be consistent object with
-       // two properties sent in the payload of `message` and `meta`
-       // (and also remove circular references)
-       //
-       const body = safeStringify({ message, meta });
-
-       //
-       // send to Cabin or your own custom endpoint here
-       // https://cabinjs.com
-       //
        const request = superagent
-         .post('https://api.cabinjs.com')
-         .set('X-Request-Id', cuid()) // normalize server/browser request id formatting
+         .post(`https://api.example.com/v1/log`)
+         // if the meta object already contained a request ID then re-use it
+         // otherwise generate one that gets re-used in the API log request
+         // (which normalizes server/browser request id formatting)
+         .set(
+           'X-Request-Id',
+           meta && meta.request && meta.request.id ? meta.request.id : cuid()
+         )
          .set('X-Axe-Version', logger.config.version)
          .timeout(5000);
 
-       // add basic auth header (e.g. if you use Cabin)
-       // if (config.key) request.auth('INSERT-YOUR-KEY');
-
-       // set any additional headers if necessary
-       // request.set({ ... });
+       // if your endpoint is protected by an API token
+       // note that superagent exposes `.auth()` method
+       // request.auth(API_TOKEN);
 
        const response = await request
          .type('application/json')
          .retry(3)
-         .send(body);
+         .send(safeStringify({ err, message, meta }));
 
-       logger.info('log sent over HTTP', { response });
+       logger.info('log sent over HTTP', { response, ignore_hook: true });
      } catch (err) {
-       logger.fatal(err, { ignore_emit: true });
+       logger.fatal(err, { ignore_hook: true });
      }
-
-     // move along to the next hook
-     next();
    }
 
-   // bind custom hooks for "fatal" and "error" log levels
-   logger.post('error', hook);
-   logger.post('fatal', hook);
-
-   // test out the HTTP integration
-   logger.error(new Error('Uh oh something went wrong!'));
+   for (const level of logger.config.levels) {
+     logger.post(level, hook);
+   }
    ```
 
 ### Send Logs to Slack
@@ -837,8 +818,7 @@ This is an example of using hooks to send a message to Slack with logs of the "f
    // create our application logger that uses hooks
    const logger = new Axe({
      logger: console, // optional (e.g. pino, signale, consola)
-     level: 'info', // optional (defaults to info)
-     name: process.env.HOSTNAME || os.hostname() // optional
+     level: 'info' // optional (defaults to info)
    });
 
    // create an instance of the Slack Web Client API for posting messages
@@ -848,12 +828,12 @@ This is an example of using hooks to send a message to Slack with logs of the "f
      logLevel: logger.config.level
    });
 
-   async function hook(next, message, meta) {
+   async function hook(err, message, meta) {
      //
      // return early if we wish to ignore this
      // (this prevents recursion; see end of this fn)
      //
-     if (meta.ignore_emit) return next();
+     if (meta.ignore_hook) return;
 
      // otherwise post a message to the slack channel
      try {
@@ -863,9 +843,9 @@ This is an example of using hooks to send a message to Slack with logs of the "f
          icon_emoji: ':axe:',
          attachments: [
            {
-             title: meta.err && meta.err.message ? meta.err.message : message,
+             title: err && err.message ? err.message : message,
              color: 'danger',
-             text: meta.err && meta.err.stack ? meta.err.stack : null,
+             text: err && err.stack ? err.stack : message,
              fields: [
                {
                  title: 'Level',
@@ -895,11 +875,8 @@ This is an example of using hooks to send a message to Slack with logs of the "f
        // finally log the result from slack
        logger.info('slack message sent', { result });
      } catch (err) {
-       logger.fatal(err, { ignore_emit: true });
+       logger.fatal(err, { ignore_hook: true });
      }
-
-     // move along to the next hook
-     next();
    }
 
    // bind custom hooks for "fatal" and "error" log levels
@@ -931,14 +908,13 @@ Sentry.init({
 });
 
 for (const level of logger.config.levels) {
-  logger.post(level, (next, message, meta) => {
+  logger.post(level, (err, message, meta) => {
     // https://docs.sentry.io/clients/node/usage/
-    if (message instanceof Error) {
-      Sentry.captureException(message, meta);
+    if (err) {
+      Sentry.captureException(err, meta);
     } else {
       Sentry.captureMessage(message, meta);
     }
-    next();
   });
 }
 
@@ -1055,6 +1031,8 @@ logger.error(new Error('oops!'), {
 [format-specifiers]: https://github.com/cabinjs/format-specifiers
 
 [forward-email]: https://forwardemail.net
+
+[forward-email-code]: https://github.com/forwardemail/forwardemail.net
 
 [high-console]: https://github.com/tusharf5/high-console
 

@@ -1,6 +1,7 @@
 // eslint-disable-next-line import/no-unassigned-import
 require('console-polyfill');
 
+const os = require('os');
 const combine = require('maybe-combine-errors');
 const format = require('@ladjs/format-util');
 const formatSpecifiers = require('format-specifiers');
@@ -21,6 +22,10 @@ const omittedLoggerKeys = new Set(['config', 'log']);
 const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
 const aliases = { warning: 'warn', err: 'error' };
 const levelError = `\`level\` invalid, must be: ${levels.join(', ')}`;
+const name =
+  process.env.NODE_ENV === 'development'
+    ? false
+    : process.env.HOSTNAME || os.hostname();
 
 // <https://github.com/sindresorhus/is-plain-obj/blob/main/index.js>
 function isPlainObject(value) {
@@ -124,7 +129,7 @@ class Axe {
         version: pkg.version,
         silent: false,
         logger: console,
-        name: false,
+        name,
         level: 'info',
         levels: ['info', 'warn', 'error', 'fatal'],
         appInfo: process.env.AXE_APP_INFO
@@ -381,6 +386,11 @@ class Axe {
     //
     const method = modifier === -1 ? 'log' : level;
 
+    // pre-hooks
+    for (const hook of this.config.hooks.pre) {
+      [err, message, meta] = hook(method, err, message, meta);
+    }
+
     //
     // NOTE: using lodash _.omit and _.pick would have been _very slow_
     //
@@ -461,11 +471,6 @@ class Axe {
 
       // now we call pick-deep using the final array
       meta = pickDeep(meta, dotified);
-    }
-
-    // pre-hooks
-    for (const hook of this.config.hooks.pre) {
-      [err, message, meta] = hook(method, err, message, meta);
     }
 
     // only invoke logger methods if it was not silent
