@@ -93,7 +93,11 @@ function isFunction(value) {
   return typeof value === 'function';
 }
 
+const isBrowser =
+  typeof window !== 'undefined' && typeof window.document !== 'undefined';
+
 class Axe {
+  // eslint-disable-next-line complexity
   constructor(config = {}) {
     const remappedFields = {};
     if (process.env.AXE_REMAPPED_META_FIELDS) {
@@ -118,7 +122,10 @@ class Axe {
             remappedFields,
             omittedFields: process.env.AXE_OMIT_META_FIELDS
               ? process.env.AXE_OMIT_META_FIELDS.split(',').map((s) => s.trim())
-              : ['level', 'err', 'app', 'args'],
+              : // browser environments should send client-side payload with all metadata
+              isBrowser
+              ? ['level', 'err', 'app', 'args']
+              : [],
             pickedFields: process.env.AXE_PICK_META_FIELDS
               ? process.env.AXE_PICK_META_FIELDS.split(',').map((s) => s.trim())
               : [],
