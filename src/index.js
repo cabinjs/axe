@@ -124,8 +124,8 @@ class Axe {
               ? process.env.AXE_OMIT_META_FIELDS.split(',').map((s) => s.trim())
               : // browser environments should send client-side payload with all metadata
               isBrowser
-              ? ['level', 'err', 'app', 'args']
-              : [],
+              ? []
+              : ['level', 'err', 'app', 'args'],
             pickedFields: process.env.AXE_PICK_META_FIELDS
               ? process.env.AXE_PICK_META_FIELDS.split(',').map((s) => s.trim())
               : [],
