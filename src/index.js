@@ -374,7 +374,7 @@ class Axe {
     }
 
     //
-    // NOTE: this was removed in v10.2.3 due to circular reference issues
+    // NOTE: this was removed in v10.2.2 due to circular reference issues
     //       (the workaround would involve safeStringify and then JSON.parse which would be perf bloat)
     //       (there still might be another workaround or perhaps we don't add all the args here except additional)
     //
