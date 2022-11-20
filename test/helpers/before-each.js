@@ -11,7 +11,7 @@ module.exports = function (logger) {
         remappedFields: {
           'remap.field': 'remappedField'
         },
-        omittedFields: ['level', 'err', 'app', 'args', 'request', 'beep'],
+        omittedFields: ['level', 'err', 'app', 'request', 'beep'],
         pickedFields: ['request.headers', 'foo.bar']
       },
       hooks: {
