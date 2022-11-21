@@ -314,66 +314,53 @@ Axe will automatically add the following metadata and information to the `meta` 
 | `meta.app.os`             | Object | Node [os](https://nodejs.org/api/os.html) information.                                                                                                              |
 | `meta.app.worker_threads` | Object | Node [worker_threads](https://nodejs.org/api/worker_threads.html) information.                                                                                      |
 
-:warning: **Note that by default,** **<u>Axe will not output this additional information for you</u>** (since we set the `meta.omittedFields` option to `[ 'level', 'err', 'app' ]` by default).
+**As of v11.0.0** Axe will output `meta.app` by default unless you pass `omittedFields: [ 'app' ]` or specify the process environment variable of `AXE_OMIT_META_FIELDS=app node app.js` when you start your app.
 
 Axe will omit from metadata all properties via the default Array from `meta.omittedFields` option (see [Options](#options) below for more insight).
 
 If the argument "meta" is an empty object, then it will not be passed as an argument to logger methods \*ndash; because you don't want to see an empty `{}` polluting your log metadata. Axe keeps your log output tidy.
 
-If you set `meta.omittedFields` to an empty Array, or alternatively use the environment variable `AXE_OMIT_META_FIELDS=""`, then application information will be visible:
-
-```js
-const Axe = require('axe');
-
-const logger = new Axe({
-  meta: {
-    omittedFields: []
-    // NOTE: the default is `[ 'level', 'err', 'app' ]`
+```sh
+hello world {
+  level: 'info',
+  app: {
+    name: 'axe',
+    version: '10.0.0',
+    node: 'v16.15.1',
+    hash: '5ecd389b2523a8e810416f6c4e3ffa0ba6573dc2',
+    tag: 'v10.0.0',
+    environment: 'development',
+    hostname: 'users-MacBook-Air.local',
+    pid: 3477,
+    cluster: { isMaster: true, isWorker: false, schedulingPolicy: 2 },
+    os: {
+      arch: 'arm64',
+      cpus: [Array],
+      endianness: 'LE',
+      freemem: 271433728,
+      priority: 0,
+      homedir: '/Users/user',
+      hostname: 'users-MacBook-Air.local',
+      loadavg: [Array],
+      network_interfaces: [Object],
+      platform: 'darwin',
+      release: '21.3.0',
+      tmpdir: '/var/folders/rl/gz_3j8fx4s98k2kb0hknfygm0000gn/T',
+      totalmem: 17179869184,
+      type: 'Darwin',
+      uptime: 708340,
+      user: [Object],
+      version: 'Darwin Kernel Version 21.3.0: Wed Dec  8 00:40:46 PST 2021; root:xnu-8019.80.11.111.1~1/RELEASE_ARM64_T8101'
+    },
+    worker_threads: {
+      isMainThread: true,
+      resourceLimits: {},
+      threadId: 0,
+      workerData: null
+    }
   }
-});
-
-// hello world {
-//   level: 'info',
-//   app: {
-//     name: 'axe',
-//     version: '10.0.0',
-//     node: 'v16.15.1',
-//     hash: '5ecd389b2523a8e810416f6c4e3ffa0ba6573dc2',
-//     tag: 'v10.0.0',
-//     environment: 'development',
-//     hostname: 'users-MacBook-Air.local',
-//     pid: 3477,
-//     cluster: { isMaster: true, isWorker: false, schedulingPolicy: 2 },
-//     os: {
-//       arch: 'arm64',
-//       cpus: [Array],
-//       endianness: 'LE',
-//       freemem: 271433728,
-//       priority: 0,
-//       homedir: '/Users/user',
-//       hostname: 'users-MacBook-Air.local',
-//       loadavg: [Array],
-//       network_interfaces: [Object],
-//       platform: 'darwin',
-//       release: '21.3.0',
-//       tmpdir: '/var/folders/rl/gz_3j8fx4s98k2kb0hknfygm0000gn/T',
-//       totalmem: 17179869184,
-//       type: 'Darwin',
-//       uptime: 708340,
-//       user: [Object],
-//       version: 'Darwin Kernel Version 21.3.0: Wed Dec  8 00:40:46 PST 2021; root:xnu-8019.80.11.111.1~1/RELEASE_ARM64_T8101'
-//     },
-//     worker_threads: {
-//       isMainThread: true,
-//       resourceLimits: {},
-//       threadId: 0,
-//       workerData: null
-//     }
-//   }
-// }
+}
 ```
-
-We recommend that you set `meta.omittedFields` to an empty Array in production environments for verbosity.
 
 Note that you can also combine `meta.omittedFields` with `meta.pickedFields` and `meta.remappedFields` (in case you want to output specific properties from `meta.app` and exclude others – see [Options](#options) for more insight).
 
@@ -403,7 +390,7 @@ See [Browser](#browser-1) usage below for more information.
 | `meta`                  | Object            | See below                                                                                                 | Stores all meta config information (see the following nested properties below).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |   |
 | `meta.show`             | Boolean           | `true`                                                                                                    | Attempts to parse a boolean value from `process.env.AXE_SHOW_META` – meaning you can pass a flag `AXE_SHOW_META=true node app.js` when needed for debugging), whether or not to output metadata to logger methods. If set to `false`, then fields will not be omitted nor picked; the entire meta object will be hidden from logger output.                                                                                                                                                                                                                    |   |
 | `meta.remappedFields`   | Object            | `{}`                                                                                                      | Attempts to parse an Object mapping from `process.env.AXE_REMAPPED_META_FIELDS` (`,` and `:` delimited, e.g. `REMAPPED_META_FIELDS=foo:bar,beep.boop:beepBoop` to remap `meta.foo` to `meta.bar` and `meta.beep.boop` to `meta.beepBoop`). Note that this will clean up empty objects by default unless you set the option `meta.cleanupRemapping` to `false`). Supports dot-notation.                                                                                                                                                                         |   |
-| `meta.omittedFields`    | Array             | `['level','err','app']` in Node environments and `[]` in Browser environments                             | Attempts to parse an array value from `process.env.AXE_OMIT_META_FIELDS` (`,` delimited) - meaning you can pass a flag `OMIT_META_FIELDS=user,id node app.js`), determining which fields to omit in the metadata passed to logger methods. Supports dot-notation.                                                                                                                                                                                                                                                                                              |   |
+| `meta.omittedFields`    | Array             | `[]`                                                                                                      | Attempts to parse an array value from `process.env.AXE_OMIT_META_FIELDS` (`,` delimited) - meaning you can pass a flag `OMIT_META_FIELDS=user,id node app.js`), determining which fields to omit in the metadata passed to logger methods. Supports dot-notation.                                                                                                                                                                                                                                                                                              |   |
 | `meta.pickedFields`     | Array             | `[]`                                                                                                      | Attempts to parse an array value from `process.env.AXE_PICK_META_FIELDS` (`,` delimited) - meaning you can pass a flag, e.g. `PICK_META_FIELDS=request.headers,response.headers node app.js` which would pick from `meta.request` and `meta.response` *only* `meta.request.headers` and `meta.response.headers`), **This takes precedence after fields are omitted, which means this acts as a whitelist.** Supports dot-notation.                                                                                                                             |   |
 | `meta.cleanupRemapping` | Boolean           | `true`                                                                                                    | Whether or not to cleanup empty objects after remapping operations are completed)                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |   |
 | `silent`                | Boolean           | `false`                                                                                                   | Whether or not to invoke logger methods. Pre and post hooks will still run even if this option is set to `false`.                                                                                                                                                                                                                                                                                                                                                                                                                                              |   |
@@ -674,7 +661,7 @@ If you would like to omit fields, such as `response.headers` from a response, so
 ```js
 const logger = new Axe({
   meta: {
-    omittedFields: ['level', 'err', 'app', 'response.headers']
+    omittedFields: ['response.headers']
   }
 });
 
