@@ -35,6 +35,8 @@
   * [Send Logs to HTTP Endpoint](#send-logs-to-http-endpoint)
   * [Send Logs to Slack](#send-logs-to-slack)
   * [Send Logs to Sentry](#send-logs-to-sentry)
+  * [Send Logs to Datadog](#send-logs-to-datadog)
+  * [Send Logs to Papertrail](#send-logs-to-papertrail)
   * [Suppress Logger Data](#suppress-logger-data)
 * [Contributors](#contributors)
 * [License](#license)
@@ -828,9 +830,9 @@ This is an example of using hooks to send a message to Slack with logs of the "f
          icon_emoji: ':axe:',
          attachments: [
            {
-             title: err && err.message ? err.message : message,
+             title: err && err.message || message,
              color: 'danger',
-             text: err && err.stack ? err.stack : message,
+             text: err && err.stack || message,
              fields: [
                {
                  title: 'Level',
@@ -905,6 +907,127 @@ for (const level of logger.config.levels) {
 
 // do stuff
 logger.error(new Error('uh oh'));
+```
+
+### Send Logs to Datadog
+
+See below example and the reference at <https://docs.datadoghq.com/logs/log_collection/nodejs/?tab=winston30#agentless-logging>.
+
+Be sure to replace `DATADOG_API_KEY` and `APPLICATION_NAME` with your Datadog API key and application name.
+
+```sh
+npm install axe fast-safe-stringify cuid superagent
+```
+
+```js
+const Axe = require('axe');
+const safeStringify = require('fast-safe-stringify');
+const cuid = require('cuid');
+const superagent = require('superagent');
+
+const logger = new Axe();
+
+// TODO: use env var or replace this const with a string
+const DATADOG_API_KEY = process.env.DATADOG_API_KEY;
+
+// TODO: use env var or replace this const with a string
+const DATADOG_APP_NAME = process.env.DATADOG_APP_NAME;
+
+// <https://github.com/cabinjs/axe/#send-logs-to-datadog>
+async function hook(err, message, meta) {
+  //
+  // return early if we wish to ignore this
+  // (this prevents recursion; see end of this fn)
+  //
+  if (meta.ignore_hook) return;
+
+  try {
+    const request = superagent
+      .post(`https://http-intake.logs.datadoghq.com/api/v2/logs?dd-api-key=${DATADOG_API_KEY}&ddsource=nodejs&service=${DATADOG_APP_NAME}`)
+      // if the meta object already contained a request ID then re-use it
+      // otherwise generate one that gets re-used in the API log request
+      // (which normalizes server/browser request id formatting)
+      .set(
+        'X-Request-Id',
+        meta && meta.request && meta.request.id ? meta.request.id : cuid()
+      )
+      .set('X-Axe-Version', logger.config.version)
+      .timeout(5000);
+
+    const response = await request
+      .type('application/json')
+      .retry(3)
+      .send(safeStringify({ err, message, meta }));
+
+    logger.info('log sent over HTTP', { response, ignore_hook: true });
+  } catch (err) {
+    logger.fatal(err, { ignore_hook: true });
+  }
+}
+
+for (const level of logger.config.levels) {
+  logger.post(level, hook);
+}
+```
+
+### Send Logs to Papertrail
+
+See below example and the reference at <https://www.papertrail.com/help/configuring-centralized-logging-from-nodejs-apps/>.
+
+Be sure to replace `PAPERTRAIL_TOKEN` with your Papertrail token.
+
+```sh
+npm install axe fast-safe-stringify cuid superagent
+```
+
+```js
+const Axe = require('axe');
+const safeStringify = require('fast-safe-stringify');
+const cuid = require('cuid');
+const superagent = require('superagent');
+
+const logger = new Axe();
+
+// TODO: use env var or replace this const with a string
+const PAPERTRAIL_TOKEN = process.env.PAPERTRAIL_TOKEN;
+
+// <https://github.com/cabinjs/axe/#send-logs-to-papertrail>
+async function hook(err, message, meta) {
+  //
+  // return early if we wish to ignore this
+  // (this prevents recursion; see end of this fn)
+  //
+  if (meta.ignore_hook) return;
+
+  try {
+    const request = superagent
+      .post('https://logs.collector.solarwinds.com/v1/log')
+      // if the meta object already contained a request ID then re-use it
+      // otherwise generate one that gets re-used in the API log request
+      // (which normalizes server/browser request id formatting)
+      .set(
+        'X-Request-Id',
+        meta && meta.request && meta.request.id ? meta.request.id : cuid()
+      )
+      .set('X-Axe-Version', logger.config.version)
+      .timeout(5000);
+
+    request.auth('', PAPERTRAIL_TOKEN);
+
+    const response = await request
+      .type('application/json')
+      .retry(3)
+      .send(safeStringify({ err, message, meta }));
+
+    logger.info('log sent over HTTP', { response, ignore_hook: true });
+  } catch (err) {
+    logger.fatal(err, { ignore_hook: true });
+  }
+}
+
+for (const level of logger.config.levels) {
+  logger.post(level, hook);
+}
 ```
 
 ### Suppress Logger Data
