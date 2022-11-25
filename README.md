@@ -913,7 +913,7 @@ logger.error(new Error('uh oh'));
 
 See below example and the reference at <https://docs.datadoghq.com/logs/log_collection/nodejs/?tab=winston30#agentless-logging>.
 
-Be sure to replace `DATADOG_API_KEY` and `APPLICATION_NAME` with your Datadog API key and application name.
+Be sure to replace `DATADOG_API_KEY` and `DATADOG_APP_NAME` with your Datadog API key and application name.
 
 ```sh
 npm install axe fast-safe-stringify cuid superagent
