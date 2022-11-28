@@ -1,4 +1,4 @@
-const { format } = require('util');
+const { format } = require('node:util');
 const sinon = require('sinon');
 const parseErr = require('parse-err');
 
@@ -80,6 +80,13 @@ module.exports = (test, logger = console) => {
           })
         )
       );
+    });
+
+    test(`${name} level ${level} works with meta.is_http and meta hideHTTP option`, (t) => {
+      const message = `${level} works with meta.is_http and meta hideHTTP option`;
+      const meta = { is_http: true, user: { username: 'test' } };
+      t.context.axe[level](message, meta);
+      t.true(t.context[map[level]].calledWith(message));
     });
 
     test(`${name} level ${level} works with undefined message`, (t) => {

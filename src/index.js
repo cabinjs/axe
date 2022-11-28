@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-unassigned-import
 require('console-polyfill');
 
-const os = require('os');
+const os = require('node:os');
 const combine = require('maybe-combine-errors');
 const format = require('@ladjs/format-util');
 const formatSpecifiers = require('format-specifiers');
@@ -122,7 +122,8 @@ class Axe {
             pickedFields: process.env.AXE_PICK_META_FIELDS
               ? process.env.AXE_PICK_META_FIELDS.split(',').map((s) => s.trim())
               : [],
-            cleanupRemapping: true
+            cleanupRemapping: true,
+            hideHTTP: true
           },
           typeof config.meta === 'object' ? config.meta : {}
         ),
@@ -249,7 +250,6 @@ class Axe {
       originalArgs.push(arg);
     }
 
-    const { config } = this;
     let modifier = 0;
 
     if (isString(level) && isString(aliases[level])) {
@@ -266,7 +266,7 @@ class Axe {
     }
 
     // Return early if it is not a valid logging level
-    if (config.levels.indexOf(level) === -1) return;
+    if (this.config.levels.indexOf(level) === -1) return;
 
     // Bunyan support (meta, message, ...args)
     let isBunyan = false;
@@ -479,15 +479,17 @@ class Axe {
     }
 
     // only invoke logger methods if it was not silent
-    if (!config.silent) {
+    if (!this.config.silent) {
       // Show stack trace if necessary (along with any metadata)
-      if (isError(err) && config.showStack) {
-        if (!config.meta.show || isEmpty(meta)) {
+      if (isError(err) && this.config.showStack) {
+        if (!this.config.meta.show || isEmpty(meta)) {
           this.config.logger[method](err);
         } else {
           this.config.logger[method](err, meta);
         }
-      } else if (!config.meta.show || isEmpty(meta)) {
+      } else if (!this.config.meta.show || isEmpty(meta)) {
+        this.config.logger[method](message);
+      } else if (meta.is_http && this.config.meta.hideHTTP) {
         this.config.logger[method](message);
       } else {
         this.config.logger[method](message, meta);
