@@ -1,7 +1,9 @@
 // eslint-disable-next-line import/no-unassigned-import
 require('console-polyfill');
 
-const os = require('node:os');
+// eslint-disable-next-line unicorn/prefer-node-protocol
+const os = require('os');
+
 const combine = require('maybe-combine-errors');
 const format = require('@ladjs/format-util');
 const formatSpecifiers = require('format-specifiers');
