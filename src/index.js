@@ -96,6 +96,7 @@ function isFunction(value) {
 }
 
 class Axe {
+  // eslint-disable-next-line complexity
   constructor(config = {}) {
     const remappedFields = {};
     if (process.env.AXE_REMAPPED_META_FIELDS) {
@@ -107,8 +108,15 @@ class Axe {
     }
 
     // envify does not support conditionals well enough so we declare vars outside
-    const omittedFields = process.env.AXE_OMIT_META_FIELDS;
-    const pickedFields = process.env.AXE_PICK_META_FIELDS;
+    let omittedFields = process.env.AXE_OMIT_META_FIELDS;
+    if (typeof omittedFields === 'string')
+      omittedFields = omittedFields.split(',').map((s) => s.trim());
+    if (!Array.isArray(omittedFields)) omittedFields = [];
+
+    let pickedFields = process.env.AXE_PICK_META_FIELDS;
+    if (typeof pickedFields === 'string')
+      pickedFields = pickedFields.split(',').map((s) => s.trim());
+    if (!Array.isArray(pickedFields)) pickedFields = [];
 
     this.config = mergeOptions(
       {
@@ -121,12 +129,8 @@ class Axe {
               ? boolean(process.env.AXE_SHOW_META)
               : true,
             remappedFields,
-            omittedFields: omittedFields
-              ? omittedFields.split(',').map((s) => s.trim())
-              : [],
-            pickedFields: pickedFields
-              ? pickedFields.split(',').map((s) => s.trim())
-              : [],
+            omittedFields,
+            pickedFields,
             cleanupRemapping: true,
             hideHTTP: true
           },
