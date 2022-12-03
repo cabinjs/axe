@@ -99,13 +99,16 @@ class Axe {
   constructor(config = {}) {
     const remappedFields = {};
     if (process.env.AXE_REMAPPED_META_FIELDS) {
-      const arr = process.env.AXE_REMAPPED_META_FIELDS.split(',').map((v) =>
-        v.split(':')
-      );
+      const fields = process.env.AXE_REMAPPED_META_FIELDS;
+      const arr = fields.split(',').map((v) => v.split(':'));
       for (const [prop, value] of arr) {
         remappedFields[prop] = value;
       }
     }
+
+    // envify does not support conditionals well enough so we declare vars outside
+    const omittedFields = process.env.AXE_OMIT_META_FIELDS;
+    const pickedFields = process.env.AXE_PICK_META_FIELDS;
 
     this.config = mergeOptions(
       {
@@ -118,11 +121,11 @@ class Axe {
               ? boolean(process.env.AXE_SHOW_META)
               : true,
             remappedFields,
-            omittedFields: process.env.AXE_OMIT_META_FIELDS
-              ? process.env.AXE_OMIT_META_FIELDS.split(',').map((s) => s.trim())
+            omittedFields: omittedFields
+              ? omittedFields.split(',').map((s) => s.trim())
               : [],
-            pickedFields: process.env.AXE_PICK_META_FIELDS
-              ? process.env.AXE_PICK_META_FIELDS.split(',').map((s) => s.trim())
+            pickedFields: pickedFields
+              ? pickedFields.split(',').map((s) => s.trim())
               : [],
             cleanupRemapping: true,
             hideHTTP: true
