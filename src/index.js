@@ -132,7 +132,10 @@ class Axe {
             omittedFields,
             pickedFields,
             cleanupRemapping: true,
-            hideHTTP: true
+            hideHTTP: 'is_http',
+            // implemented mainly for @ladjs/graceful to
+            // suppress unnecessary meta output to console
+            hideMeta: 'hide_meta'
           },
           typeof config.meta === 'object' ? config.meta : {}
         ),
@@ -493,12 +496,20 @@ class Axe {
       if (isError(err) && this.config.showStack) {
         if (!this.config.meta.show || isEmpty(meta)) {
           this.config.logger[method](err);
+        } else if (
+          this.config.meta.hideMeta &&
+          meta[this.config.meta.hideMeta]
+        ) {
+          this.config.logger[method](err);
         } else {
           this.config.logger[method](err, meta);
         }
       } else if (!this.config.meta.show || isEmpty(meta)) {
         this.config.logger[method](message);
-      } else if (meta.is_http && this.config.meta.hideHTTP) {
+      } else if (
+        (this.config.meta.hideMeta && meta[this.config.meta.hideMeta]) ||
+        (this.config.meta.hideHTTP && meta[this.config.meta.hideHTTP])
+      ) {
         this.config.logger[method](message);
       } else {
         this.config.logger[method](message, meta);
