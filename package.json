@@ -1,7 +1,7 @@
 {
   "name": "axe",
   "description": "Axe is a logger-agnostic wrapper that normalizes logs regardless of argument style. Great for large development teams, old and new projects, and works with Pino, Bunyan, Winston, console, and more. It is lightweight, performant, highly-configurable, and automatically adds OS, CPU, and Git information to your logs. It supports hooks (useful for masking sensitive data) and dot-notation remapping, omitting, and picking of log metadata properties. Made for Forward Email, Lad, and Cabin.",
-  "version": "11.2.0",
+  "version": "11.2.1",
   "author": "Nick Baugh <niftylettuce@gmail.com> (http://niftylettuce.com)",
   "browser": {
     "parse-app-info": false
