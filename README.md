@@ -451,12 +451,16 @@ const IGNORED_CONTENT_TYPES = [
 for (const level of logger.config.levels) {
   logger.pre(level, function (err, message, meta) {
     if (
-      meta?.is_http &&
-      meta?.response?.status_code < 400 &&
-      meta?.response?.headers?.['content-type'] &&
-      IGNORED_CONTENT_TYPES.some((c) =>
-        meta.response.headers['content-type'].startsWith(c)
-      )
+      meta.is_http &&
+      meta.response &&
+      meta.response.status_code &&
+      meta.response.status_code < 400 &&
+      (meta.response.status_code === 304 ||
+        (meta.response.headers &&
+          meta.response.headers['content-type'] &&
+          IGNORED_CONTENT_TYPES.some((c) =>
+            meta.response.headers['content-type'].startsWith(c)
+          )))
     )
       meta[silentSymbol] = true;
     return [err, message, meta];
