@@ -452,7 +452,7 @@ for (const level of logger.config.levels) {
   logger.pre(level, function (err, message, meta) {
     if (
       meta?.is_http &&
-      meta?.response?.status_code < 400
+      meta?.response?.status_code < 400 &&
       meta?.response?.headers?.['content-type'] &&
       IGNORED_CONTENT_TYPES.some((c) =>
         meta.response.headers['content-type'].startsWith(c)
