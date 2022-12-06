@@ -6,6 +6,8 @@ const Axe = require('../../lib');
 const beforeEach = require('./before-each');
 const afterEach = require('./after-each');
 
+const silentSymbol = Symbol.for('axe.silent');
+
 const map = {
   log: 'log',
   trace: 'trace',
@@ -64,6 +66,16 @@ module.exports = (test, logger = console) => {
       const message = `${level} works with meta`;
       t.context.axe[level](message, { user: { username: 'test' } });
       t.true(t.context[map[level]].calledWithMatch(message));
+    });
+
+    test(`${name} level ${level} works with meta silent symbol`, (t) => {
+      const message = `${level} works with meta silent symbol`;
+      t.context.axe[level](message, {
+        foo: 'bar',
+        user: { username: 'test' },
+        [silentSymbol]: true
+      });
+      t.false(t.context[map[level]].calledWithMatch(message));
     });
 
     test(`${name} level ${level} works with meta and meta.show option`, (t) => {

@@ -22,6 +22,7 @@
     "boolean": "3.2.0",
     "console-polyfill": "0.3.0",
     "format-specifiers": "^1.0.0",
+    "is-symbol": "^1.0.4",
     "iserror": "0.0.2",
     "maybe-combine-errors": "1.0.0",
     "merge-options": "3.0.4",

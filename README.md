@@ -19,6 +19,7 @@
   * [Browser](#browser)
 * [Usage](#usage)
   * [Options](#options)
+  * [Suppress Console Output and Logger Invocation](#suppress-console-output-and-logger-invocation)
   * [Supported Platforms](#supported-platforms)
   * [Node](#node-1)
   * [Browser](#browser-1)
@@ -393,7 +394,7 @@ See [Browser](#browser-1) usage below for more information.
 | `meta.show`             | Boolean           | `true`                                                                                                    | Attempts to parse a boolean value from `process.env.AXE_SHOW_META` – meaning you can pass a flag `AXE_SHOW_META=true node app.js` when needed for debugging), whether or not to output metadata to logger methods. If set to `false`, then fields will not be omitted nor picked; the entire meta object will be hidden from logger output.                                                                                                                                                                                                                    |   |
 | `meta.remappedFields`   | Object            | `{}`                                                                                                      | Attempts to parse an Object mapping from `process.env.AXE_REMAPPED_META_FIELDS` (`,` and `:` delimited, e.g. `REMAPPED_META_FIELDS=foo:bar,beep.boop:beepBoop` to remap `meta.foo` to `meta.bar` and `meta.beep.boop` to `meta.beepBoop`). Note that this will clean up empty objects by default unless you set the option `meta.cleanupRemapping` to `false`). Supports dot-notation.                                                                                                                                                                         |   |
 | `meta.omittedFields`    | Array             | `[]`                                                                                                      | Attempts to parse an array value from `process.env.AXE_OMIT_META_FIELDS` (`,` delimited) - meaning you can pass a flag `AXE_OMIT_META_FIELDS=user,id node app.js`), determining which fields to omit in the metadata passed to logger methods. Supports dot-notation.                                                                                                                                                                                                                                                                                          |   |
-| `meta.pickedFields`     | Array             | `[]`                                                                                                      | Attempts to parse an array value from `process.env.AXE_PICK_META_FIELDS` (`,` delimited) - meaning you can pass a flag, e.g. `AXE_PICK_META_FIELDS=request.headers,response.headers node app.js` which would pick from `meta.request` and `meta.response` *only* `meta.request.headers` and `meta.response.headers`), **This takes precedence after fields are omitted, which means this acts as a whitelist.** Supports dot-notation.                                                                                                                         |   |
+| `meta.pickedFields`     | Array             | `[]`                                                                                                      | Attempts to parse an array value from `process.env.AXE_PICK_META_FIELDS` (`,` delimited) - meaning you can pass a flag, e.g. `AXE_PICK_META_FIELDS=request.headers,response.headers node app.js` which would pick from `meta.request` and `meta.response` *only* `meta.request.headers` and `meta.response.headers`), **This takes precedence after fields are omitted, which means this acts as a whitelist.** Supports dot-notation.  **As of v11.2.0 this now supports Symbols, but only top-level symbols via `Reflect.ownKeys` (not recursive yet).**     |   |
 | `meta.cleanupRemapping` | Boolean           | `true`                                                                                                    | Whether or not to cleanup empty objects after remapping operations are completed)                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |   |
 | `meta.hideHTTP`         | Boolean           | `true`                                                                                                    | Whether to suppress HTTP metadata (prevents logger invocation with second arg `meta`) if `meta.is_http` is `true` (via [parse-request][] v5.1.0+).  If you manually set `meta.is_http = true` and this is `true`, then `meta` arg will be suppressed as well.                                                                                                                                                                                                                                                                                                  |   |
 | `meta.hideMeta`         | String or Boolean | `"hide_meta"`                                                                                             | If this value is provided as a String, then if `meta[config.hideMeta]` is `true`, it will suppress the entire metadata object `meta` (the second arg) from being passed/invoked to the logger.  This is useful when you want to suppress metadata from the logger invocation, but still persist it to post hooks (e.g. for sending upstream to your log storage provider). This helps to keep development and production console output clean while also allowing you to still store the meta object.                                                          |   |
@@ -403,6 +404,65 @@ See [Browser](#browser-1) usage below for more information.
 | `level`                 | String            | `"info"`                                                                                                  | The default level of logging to invoke `logger` methods for (defaults to `info`, which includes all logs including info and higher in severity (e.g. `info`, `warn`, `error`, `fatal`)                                                                                                                                                                                                                                                                                                                                                                         |   |
 | `levels`                | Array             | `['info','warn','error','fatal']`                                                                         | An Array of logging levels to support. You usually shouldn't change this unless you want to prevent logger methods from being invoked or prevent hooks from being run for a certain log level. If an invalid log level is attempted to be invoked, and if it is not in this Array, then no hooks and no logger methods will be invoked.                                                                                                                                                                                                                        |   |
 | `appInfo`               | Boolean           | `true`                                                                                                    | Attempts to parse a boolean value from `process.env.AXE_APP_INFO`) - whether or not to parse application information (using [parse-app-info][]).                                                                                                                                                                                                                                                                                                                                                                                                               |   |
+
+### Suppress Console Output and Logger Invocation
+
+If you wish to suppress console output (e.g. prevent logger invocation) for a specific log – you can do so by setting a special property to have a `true` value in the meta object.
+
+This special property is a Symbol via `Symbol.for('axe.silent')`.  Using a Symbol will prevent logs from being suppressed inadvertently (e.g. if a meta object contained `is_silent: true` however you did not explicitly set `is_silent: true`, as it might have been the result of another package or Object parsed.
+
+To do so, simply declare `const silentSymbol = Symbol.for('axe.silent')` and then use it as follows:
+
+```js
+const Axe = require('axe');
+
+const silentSymbol = Symbol.for('axe.silent');
+
+const logger = new Axe();
+
+logger.info('hello world');                           // <--- outputs to console "hello world"
+logger.info('hello world', { [silentSymbol]: true }); // <--- **does not output to console**
+```
+
+Pre and post hooks will still run whether this is set to true or not – this is simply only for logger method invocation.
+
+Another common use case for this is to suppress console output for HTTP asset requests that are successful.
+
+Note that the example provided below assumes you are using [Cabin's middleware][cabin] which parses HTTP requests into the `meta` Object properly:
+
+```js
+const Axe = require('axe');
+
+const silentSymbol = Symbol.for('axe.silent');
+
+const logger = new Axe();
+
+const IGNORED_CONTENT_TYPES = [
+  'application/javascript; charset=utf-8',
+  'application/manifest+json',
+  'font',
+  'image',
+  'text/css'
+];
+
+//
+// set the silent symbol in axe to true for successful asset responses
+//
+for (const level of logger.config.levels) {
+  logger.pre(level, function (err, message, meta) {
+    if (
+      meta?.is_http &&
+      meta?.response?.status_code < 400
+      meta?.response?.headers?.['content-type'] &&
+      IGNORED_CONTENT_TYPES.some((c) =>
+        meta.response.headers['content-type'].startsWith(c)
+      )
+    )
+      meta[silentSymbol] = true;
+    return [err, message, meta];
+  });
+}
+```
 
 ### Supported Platforms
 

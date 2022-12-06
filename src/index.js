@@ -9,6 +9,7 @@ const format = require('@ladjs/format-util');
 const formatSpecifiers = require('format-specifiers');
 const get = require('@strikeentco/get');
 const isError = require('iserror');
+const isSymbol = require('is-symbol');
 const mergeOptions = require('merge-options');
 const pMapSeries = require('p-map-series');
 const parseAppInfo = require('parse-app-info');
@@ -20,6 +21,7 @@ const { boolean } = require('boolean');
 
 const pkg = require('../package.json');
 
+const silentSymbol = Symbol.for('axe.silent');
 const omittedLoggerKeys = new Set(['config', 'log']);
 const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
 const aliases = { warning: 'warn', err: 'error' };
@@ -41,7 +43,8 @@ function isPlainObject(value) {
       prototype === Object.prototype ||
       Object.getPrototypeOf(prototype) === null) &&
     !(Symbol.toStringTag in value) &&
-    !(Symbol.iterator in value)
+    !(Symbol.iterator in value) &&
+    !isSymbol(value)
   );
 }
 
@@ -49,7 +52,7 @@ function isPlainObject(value) {
 function dotifyToArray(obj) {
   const res = [];
   function recurse(obj, current) {
-    for (const key of Object.keys(obj)) {
+    for (const key of Reflect.ownKeys(obj)) {
       const value = obj[key];
       const newKey = current ? current + '.' + key : key; // joined key with dot
       // if (value && typeof value === 'object' && !(value instanceof Date) && !ObjectID.isValid(value)) {
@@ -70,7 +73,7 @@ function isEmpty(value) {
   return (
     value === undefined ||
     value === null ||
-    (typeof value === 'object' && Object.keys(value).length === 0) ||
+    (typeof value === 'object' && Reflect.ownKeys(value).length === 0) ||
     (typeof value === 'string' && value.trim().length === 0)
   );
 }
@@ -421,8 +424,11 @@ class Axe {
     // (and not have two operations, one for omit, and one for pick)
     //
 
+    // set a boolean flag if we had the silent symbol or not
+    const hadTrueSilentSymbol = boolean(meta[silentSymbol]);
+
     if (!isEmpty(this.config.meta.remappedFields)) {
-      for (const key of Object.keys(this.config.meta.remappedFields)) {
+      for (const key of Reflect.ownKeys(this.config.meta.remappedFields)) {
         set(meta, this.config.meta.remappedFields[key], get(meta, key));
         unset(meta, key);
         // cleanup empty objects after remapping
@@ -457,11 +463,16 @@ class Axe {
           // <https://stackoverflow.com/a/9882349>
           let i = dotified.length;
           while (i--) {
-            if (dotified[i] === prop || dotified[i].indexOf(`${prop}.`) === 0)
+            if (
+              dotified[i] === prop ||
+              (!isSymbol(dotified[i]) && dotified[i].indexOf(`${prop}.`) === 0)
+            )
               dotified.splice(i, 1);
           }
         }
       }
+
+      const pickedSymbols = [];
 
       if (!isEmpty(this.config.meta.pickedFields)) {
         for (const prop of this.config.meta.pickedFields) {
@@ -472,12 +483,17 @@ class Axe {
           // response
           //
           // so we need to split by the first period and omit any keys from dotified starting with it
-          const index = prop.indexOf('.');
-          const key = prop.slice(0, index + 1);
-          if (index !== -1) {
-            let i = dotified.length;
-            while (i--) {
-              if (dotified[i].indexOf(key) === 0) dotified.splice(i, 1);
+          if (isSymbol(prop)) {
+            if (meta[prop]) pickedSymbols.push([prop, meta[prop]]);
+          } else {
+            const index = prop.indexOf('.');
+            const key = prop.slice(0, index + 1);
+            if (index !== -1) {
+              let i = dotified.length;
+              while (i--) {
+                if (!isSymbol(dotified[i]) && dotified[i].indexOf(key) === 0)
+                  dotified.splice(i, 1);
+              }
             }
           }
 
@@ -486,12 +502,39 @@ class Axe {
         }
       }
 
+      //
+      // iterate over all dotified values to check for symbols
+      //
+      // NOTE: this does not take into account that they could already be in `pickedSymbols`
+      //       (and it doesn't also do bigints yet)
+      //
+      for (const prop of dotified) {
+        if (isSymbol(prop) && meta[prop])
+          pickedSymbols.push([prop, meta[prop]]);
+      }
+
+      //
       // now we call pick-deep using the final array
+      //
+      // NOTE: this does not pick symbols nor bigints
+      //
       meta = pickDeep(meta, dotified);
+
+      //
+      // if there were any top-level symbols to be
+      // picked then we need to add them back here to the list
+      //
+      // NOTE: we'd probably want to do the same for bigints as symbols
+      //
+      if (pickedSymbols.length > 0) {
+        for (const [key, value] of pickedSymbols) {
+          meta[key] = value;
+        }
+      }
     }
 
     // only invoke logger methods if it was not silent
-    if (!this.config.silent) {
+    if (!this.config.silent && !hadTrueSilentSymbol) {
       // Show stack trace if necessary (along with any metadata)
       if (isError(err) && this.config.showStack) {
         if (!this.config.meta.show || isEmpty(meta)) {
