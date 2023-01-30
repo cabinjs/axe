@@ -4,7 +4,6 @@ require('console-polyfill');
 // eslint-disable-next-line unicorn/prefer-node-protocol
 const os = require('os');
 
-const combine = require('maybe-combine-errors');
 const format = require('@ladjs/format-util');
 const formatSpecifiers = require('format-specifiers');
 const get = require('@strikeentco/get');
@@ -376,7 +375,18 @@ class Axe {
 
     let err;
     if (errors.length > 0) {
-      err = combine(errors);
+      if (errors.length === 1) {
+        err = errors[0];
+      } else {
+        err = new Error(
+          [...new Set(errors.map((e) => e.message).filter(Boolean))].join('; ')
+        );
+        err.stack = [
+          ...new Set(errors.map((e) => e.stack).filter(Boolean))
+        ].join('\n\n');
+        err.errors = errors;
+      }
+
       meta.err = parseErr(err);
       if (!isString(message)) message = err.message;
     }

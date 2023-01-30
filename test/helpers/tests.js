@@ -262,7 +262,6 @@ module.exports = (test, logger = console) => {
     test(`${name} level ${level} combined error with 2 args`, (t) => {
       t.context.axe[level](new Error('hmm'), new Error('oops'));
       const _level = level === 'log' ? 'error' : level;
-      t.is(t.context[map[_level]].getCall(0).args[0].name, 'CombinedError');
       t.is(t.context[map[_level]].getCall(0).args[0].message, 'hmm; oops');
     });
 
@@ -270,7 +269,6 @@ module.exports = (test, logger = console) => {
       const err = new Error('oops');
       t.context.axe[level](new Error('hmm'), { err });
       const _level = level === 'log' ? 'error' : level;
-      t.is(t.context[map[_level]].getCall(0).args[0].name, 'CombinedError');
       t.is(t.context[map[_level]].getCall(0).args[0].message, 'hmm; oops');
       t.deepEqual(
         t.context[map[_level]].getCall(0).args[1].original_err,
@@ -282,7 +280,6 @@ module.exports = (test, logger = console) => {
       const err = new Error('oops');
       t.context.axe[level](new Error('hmm'), new Error('uh oh'), { err });
       const _level = level === 'log' ? 'error' : level;
-      t.is(t.context[map[_level]].getCall(0).args[0].name, 'CombinedError');
       t.is(t.context[map[_level]].getCall(0).args[0].message, 'hmm; uh oh');
       t.is(t.context[map[_level]].getCall(0).args[1], undefined);
     });
@@ -295,7 +292,6 @@ module.exports = (test, logger = console) => {
         new Error('oops')
       );
       const _level = level === 'log' ? 'error' : level;
-      t.is(t.context[map[_level]].getCall(0).args[0].name, 'CombinedError');
       t.is(
         t.context[map[_level]].getCall(0).args[0].message,
         'hmm; uh oh; foo bar; oops'
@@ -309,7 +305,6 @@ module.exports = (test, logger = console) => {
         new Error('foo bar')
       );
       const _level = level === 'log' ? 'error' : level;
-      t.is(t.context[map[_level]].getCall(0).args[0].name, 'CombinedError');
       t.is(
         t.context[map[_level]].getCall(0).args[0].message,
         'hmm; uh oh; foo bar'
@@ -318,7 +313,6 @@ module.exports = (test, logger = console) => {
 
     test(`${name} level ${level} combined error with 3 args and message first`, (t) => {
       t.context.axe[level]('hmm', new Error('uh oh'), new Error('foo bar'));
-      t.is(t.context[map[level]].getCall(0).args[0].name, 'CombinedError');
       t.is(t.context[map[level]].getCall(0).args[0].message, 'uh oh; foo bar');
     });
 
@@ -330,7 +324,6 @@ module.exports = (test, logger = console) => {
         new Error('beep')
       );
       const _level = level === 'log' ? 'error' : level;
-      t.is(t.context[map[_level]].getCall(0).args[0].name, 'CombinedError');
       t.is(
         t.context[map[_level]].getCall(0).args[0].message,
         'hmm; uh oh; foo bar; beep'
@@ -344,7 +337,6 @@ module.exports = (test, logger = console) => {
         new Error('foo bar'),
         new Error('beep')
       );
-      t.is(t.context[map[level]].getCall(0).args[0].name, 'CombinedError');
       t.is(
         t.context[map[level]].getCall(0).args[0].message,
         'uh oh; foo bar; beep'
@@ -360,7 +352,6 @@ module.exports = (test, logger = console) => {
         new Error('boop')
       );
       const _level = level === 'log' ? 'error' : level;
-      t.is(t.context[map[_level]].getCall(0).args[0].name, 'CombinedError');
       t.is(
         t.context[map[_level]].getCall(0).args[0].message,
         'hmm; uh oh; foo bar; beep; boop'
