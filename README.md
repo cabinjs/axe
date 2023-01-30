@@ -792,15 +792,16 @@ We recommend [superagent](https://github.com/visionmedia/superagent), however th
 1. You will also need to install additional packages:
 
    ```sh
-   npm install axe fast-safe-stringify cuid superagent
+   npm install axe cuid parse-err fast-safe-stringify superagent
    ```
 
 2. Implementation example is provided below (and you can also refer to the [Forward Email][forward-email-code] code base):
 
    ```js
    const Axe = require('axe');
-   const safeStringify = require('fast-safe-stringify');
    const cuid = require('cuid');
+   const parseErr = require('parse-err');
+   const safeStringify = require('fast-safe-stringify');
    const superagent = require('superagent');
 
    const logger = new Axe();
@@ -833,7 +834,7 @@ We recommend [superagent](https://github.com/visionmedia/superagent), however th
        const response = await request
          .type('application/json')
          .retry(3)
-         .send(safeStringify({ err, message, meta }));
+         .send(safeStringify({ err: parseErr(err), message, meta }));
 
        logger.info('log sent over HTTP', { response, ignore_hook: true });
      } catch (err) {
@@ -982,13 +983,14 @@ See below example and the reference at <https://docs.datadoghq.com/logs/log_coll
 Be sure to replace `DATADOG_API_KEY` and `DATADOG_APP_NAME` with your Datadog API key and application name.
 
 ```sh
-npm install axe fast-safe-stringify cuid superagent
+npm install axe cuid parse-err fast-safe-stringify superagent
 ```
 
 ```js
 const Axe = require('axe');
-const safeStringify = require('fast-safe-stringify');
 const cuid = require('cuid');
+const parseErr = require('parse-err');
+const safeStringify = require('fast-safe-stringify');
 const superagent = require('superagent');
 
 const logger = new Axe();
@@ -1023,7 +1025,7 @@ async function hook(err, message, meta) {
     const response = await request
       .type('application/json')
       .retry(3)
-      .send(safeStringify({ err, message, meta }));
+      .send(safeStringify({ err: parseErr(err), message, meta }));
 
     logger.info('log sent over HTTP', { response, ignore_hook: true });
   } catch (err) {
@@ -1043,13 +1045,14 @@ See below example and the reference at <https://www.papertrail.com/help/configur
 Be sure to replace `PAPERTRAIL_TOKEN` with your Papertrail token.
 
 ```sh
-npm install axe fast-safe-stringify cuid superagent
+npm install axe cuid parse-err fast-safe-stringify superagent
 ```
 
 ```js
 const Axe = require('axe');
-const safeStringify = require('fast-safe-stringify');
 const cuid = require('cuid');
+const parseErr = require('parse-err');
+const safeStringify = require('fast-safe-stringify');
 const superagent = require('superagent');
 
 const logger = new Axe();
@@ -1083,7 +1086,7 @@ async function hook(err, message, meta) {
     const response = await request
       .type('application/json')
       .retry(3)
-      .send(safeStringify({ err, message, meta }));
+      .send(safeStringify({ err: parseErr(err), message, meta }));
 
     logger.info('log sent over HTTP', { response, ignore_hook: true });
   } catch (err) {
