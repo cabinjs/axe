@@ -259,6 +259,18 @@ module.exports = (test, logger = console) => {
       t.is(t.context[`${level}PostTest`][1], 'test post hook');
     });
 
+    test(`${name} level ${level} post hook with await`, async (t) => {
+      t.context[`${level}PostTest`] = [];
+      const result = await t.context.axe[level]('test post hook');
+      t.deepEqual(result[0], {
+        level,
+        err: undefined,
+        message: 'test post hook',
+        meta: {}
+      });
+      t.is(t.context[`${level}PostTest`][1], 'test post hook');
+    });
+
     test(`${name} level ${level} combined error with 2 args`, (t) => {
       t.context.axe[level](new Error('hmm'), new Error('oops'));
       const _level = level === 'log' ? 'error' : level;

@@ -647,6 +647,8 @@ Pre hooks allow you to manipulate the arguments `err`, `message`, and `meta` tha
 
 Post hooks are useful if you want to send logging information to a third-party, store them into a database, or do any sort of custom processing.
 
+As of v12, logger invocation (e.g. `logger.info('hello')`) will return their post hooks as a Promise – which means you can `await logger.error(err);` if needed – which is useful if you have jobs that need to store logs to a database using post hooks before the job shuts down with `process.exit(0)`.  Note that the resolved Promise returns an Array of the returned values from post hooks, executed serially via `p-map-series`.
+
 You should properly handle any errors in your pre hooks, otherwise they will be thrown and logger methods will not be invoked.
 
 We will catch errors for post hooks by default and log them as errors with your logger methods' `logger.error` method).
@@ -694,6 +696,31 @@ logger.error(new Error('oops'));
 //     at node:internal/main/run_main_module:17:47 {
 //   is_beep_boop: true
 // }
+```
+
+```js
+const fs = require('node:fs');
+const path = require('node:path');
+
+const Axe = require('axe');
+
+const logger = new Axe();
+
+logger.post('error', async (err, message, meta) {
+  // store the log
+  await fs.promises.appendFile(
+    path.join(__dirname, 'logs.txt'),
+    JSON.stringify({ err, message, meta }, null, 2) + '\n'
+  );
+  return { err, message, meta };
+});
+
+// wait until logger stores the log
+const [ log ] = await logger.error(new Error('oops'));
+console.log(log);
+
+// will wait to store logs before exiting process
+process.exit(0);
 ```
 
 For more examples of hooks, see our below sections on [Send Logs to HTTP Endpoint](#send-logs-to-http-endpoint), [Send Logs to Slack](#send-logs-to-slack)), and [Suppress Logger Data](#suppress-logger-data) below.
