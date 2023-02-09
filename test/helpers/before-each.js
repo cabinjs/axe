@@ -28,7 +28,7 @@ module.exports = function (logger) {
         post: [
           function (level, err, message, meta) {
             t.context[`${level}PostConfigTest`] = [err, message, meta];
-            return { level, err, message, meta };
+            return { method: level, err, message, meta };
           }
         ]
       }

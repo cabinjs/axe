@@ -263,7 +263,7 @@ module.exports = (test, logger = console) => {
       t.context[`${level}PostTest`] = [];
       const result = await t.context.axe[level]('test post hook');
       t.deepEqual(result[0], {
-        level,
+        method: level,
         err: undefined,
         message: 'test post hook',
         meta: {}

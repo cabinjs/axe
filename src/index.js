@@ -570,6 +570,8 @@ class Axe {
     }
 
     // post-hooks
+    if (this.config.hooks.post.length === 0)
+      return { method, err, message, meta };
     return pMapSeries(this.config.hooks.post, (hook) =>
       hook(method, err, message, meta)
     )
