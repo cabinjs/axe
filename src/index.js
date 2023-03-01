@@ -53,7 +53,10 @@ function dotifyToArray(obj) {
   function recurse(obj, current) {
     for (const key of Reflect.ownKeys(obj)) {
       const value = obj[key];
-      const newKey = current ? current + '.' + key : key; // joined key with dot
+      const convertedKey = isSymbol(key)
+        ? Symbol.keyFor(key) || key.description
+        : key;
+      const newKey = current ? current + '.' + convertedKey : convertedKey; // joined key with dot
       // if (value && typeof value === 'object' && !(value instanceof Date) && !ObjectID.isValid(value)) {
       if (isPlainObject(value)) {
         recurse(value, newKey); // it's a nested object, so do it again

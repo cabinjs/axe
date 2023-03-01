@@ -27,6 +27,7 @@
   * [Silent Logging](#silent-logging)
   * [Stack Traces and Error Handling](#stack-traces-and-error-handling)
   * [Hooks](#hooks)
+  * [Symbols](#symbols)
   * [Remapping](#remapping)
   * [Omitting](#omitting)
   * [Picking](#picking)
@@ -724,6 +725,10 @@ process.exit(0);
 ```
 
 For more examples of hooks, see our below sections on [Send Logs to HTTP Endpoint](#send-logs-to-http-endpoint), [Send Logs to Slack](#send-logs-to-slack)), and [Suppress Logger Data](#suppress-logger-data) below.
+
+### Symbols
+
+If you use Symbols (e.g. `new Symbol('hello')` or `Symbol.for('hello')`, and also wish to use these Symbols with remapping, picking, or omitting – then you must refer to them in dot-notation with either the `Symbol.keyFor(symbol)` value or the `symbol.description` value.  In the case of `const symbol = new Symbol('hello')` and `const symbol = Symbol.for('hello')`, the dot-notation format would be simply be the key value `"hello"` – however if the symbol is nested in an object such as `obj[symbol]`, then the dot-notation value would be `obj.hello`.
 
 ### Remapping
 
