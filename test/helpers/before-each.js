@@ -1,5 +1,4 @@
 const sinon = require('sinon');
-
 const Axe = require('../../lib');
 
 module.exports = function (logger) {

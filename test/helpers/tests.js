@@ -1,7 +1,6 @@
 const { format } = require('node:util');
 const sinon = require('sinon');
 const parseErr = require('parse-err');
-
 const Axe = require('../../lib');
 const beforeEach = require('./before-each');
 const afterEach = require('./after-each');

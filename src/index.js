@@ -3,7 +3,6 @@ require('console-polyfill');
 
 // eslint-disable-next-line unicorn/prefer-node-protocol
 const os = require('os');
-
 const format = require('@ladjs/format-util');
 const formatSpecifiers = require('format-specifiers');
 const get = require('@strikeentco/get');
@@ -17,7 +16,6 @@ const pickDeep = require('pick-deep');
 const set = require('@strikeentco/set');
 const unset = require('unset-value');
 const { boolean } = require('boolean');
-
 const pkg = require('../package.json');
 
 const silentSymbol = Symbol.for('axe.silent');
@@ -85,7 +83,7 @@ function isNull(value) {
 }
 
 function isUndefined(value) {
-  return typeof value === 'undefined';
+  return value === undefined;
 }
 
 function isObject(value) {
