@@ -57,6 +57,7 @@ function dotifyToArray(obj) {
       const newKey = current ? current + '.' + convertedKey : convertedKey; // joined key with dot
       // if (value && typeof value === 'object' && !(value instanceof Date) && !ObjectID.isValid(value)) {
       if (isPlainObject(value)) {
+        res.push(convertedKey);
         recurse(value, newKey); // it's a nested object, so do it again
       } else {
         res.push(newKey);
@@ -502,8 +503,8 @@ class Axe {
             if (index !== -1) {
               let i = dotified.length;
               while (i--) {
-                if (!isSymbol(dotified[i]) && dotified[i].indexOf(key) === 0)
-                  dotified.splice(i, 1);
+                if (dotified[i] === key.slice(0, -1)) dotified.splice(i, 1);
+                else if (dotified[i].indexOf(key) === 0) dotified.splice(i, 1);
               }
             }
           }
@@ -520,8 +521,11 @@ class Axe {
       //       (and it doesn't also do bigints yet)
       //
       for (const prop of dotified) {
-        if (isSymbol(prop) && meta[prop])
-          pickedSymbols.push([prop, meta[prop]]);
+        if (isSymbol(prop)) {
+          if (meta[prop] !== undefined) pickedSymbols.push([prop, meta[prop]]);
+        } else if (meta[Symbol.for(prop)] !== undefined) {
+          pickedSymbols.push([Symbol.for(prop), meta[Symbol.for(prop)]]);
+        }
       }
 
       //
