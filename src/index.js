@@ -531,9 +531,18 @@ class Axe {
       //
       // now we call pick-deep using the final array
       //
-      // NOTE: this does not pick symbols nor bigints
+      // NOTE: this does not pick symbols, bigints, nor streams
+      //       <https://github.com/strikeentco/pick-deep/issues/2>
+      //       <https://github.com/strikeentco/pick-deep/issues/2>
       //
-      meta = pickDeep(meta, dotified);
+      // NOTE: this is wrapped in try/catch in case similar errors occur
+      //       <https://github.com/stripe/stripe-node/issues/1796>
+      //
+      try {
+        meta = pickDeep(meta, dotified);
+      } catch (err) {
+        this.config.logger.error(err);
+      }
 
       //
       // if there were any top-level symbols to be
