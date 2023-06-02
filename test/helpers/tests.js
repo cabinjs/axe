@@ -203,7 +203,7 @@ module.exports = (test, logger = console) => {
     });
 
     test(`${name} level ${level} allows message using placeholder token`, (t) => {
-      const args = ['arg1 %s hello world', 'arg2'];
+      const args = ['arg1 %s hello world %d', 'arg2', 3];
       t.context.axe[level](...args);
       const message = format(...args);
       t.true(t.context[map[level]].calledWithMatch(message));
@@ -291,8 +291,9 @@ module.exports = (test, logger = console) => {
       const err = new Error('oops');
       t.context.axe[level](new Error('hmm'), new Error('uh oh'), { err });
       const _level = level === 'log' ? 'error' : level;
-      t.is(t.context[map[_level]].getCall(0).args[0].message, 'hmm; uh oh');
-      t.is(t.context[map[_level]].getCall(0).args[1], undefined);
+      t.is(t.context[map[_level]].getCall(0).args[0], format({ err }));
+      t.is(t.context[map[_level]].getCall(0).args[1].message, 'hmm; uh oh');
+      t.is(t.context[map[_level]].getCall(0).args[2], undefined);
     });
 
     test(`${name} level ${level} combined error with message and 3 additional arg`, (t) => {
@@ -323,8 +324,16 @@ module.exports = (test, logger = console) => {
     });
 
     test(`${name} level ${level} combined error with 3 args and message first`, (t) => {
-      t.context.axe[level]('hmm', new Error('uh oh'), new Error('foo bar'));
-      t.is(t.context[map[level]].getCall(0).args[0].message, 'uh oh; foo bar');
+      const err1 = new Error('uh oh');
+      const err2 = new Error('foo bar');
+      t.context.axe[level]('hmm', err1, err2);
+      t.is(t.context[map[level]].getCall(0).args[0], 'hmm');
+      t.true(t.context[map[level]].getCall(0).args[1] instanceof Error);
+      t.deepEqual(t.context[map[level]].getCall(0).args[1].errors, [
+        err1,
+        err2
+      ]);
+      t.is(t.context[map[level]].getCall(0).args[1].message, 'uh oh; foo bar');
     });
 
     test(`${name} level ${level} combined error with 4 args`, (t) => {
@@ -348,8 +357,9 @@ module.exports = (test, logger = console) => {
         new Error('foo bar'),
         new Error('beep')
       );
+      t.is(t.context[map[level]].getCall(0).args[0], 'hmm');
       t.is(
-        t.context[map[level]].getCall(0).args[0].message,
+        t.context[map[level]].getCall(0).args[1].message,
         'uh oh; foo bar; beep'
       );
     });

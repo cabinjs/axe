@@ -259,6 +259,9 @@ class Axe {
   log(level, message, meta, ...args) {
     const originalArgs = [];
     const errors = [];
+    let hasMessage = false;
+    let hasLevel = true;
+
     if (!isUndefined(level)) originalArgs.push(level);
     if (!isUndefined(message)) originalArgs.push(message);
     if (!isUndefined(meta)) originalArgs.push(meta);
@@ -271,10 +274,12 @@ class Axe {
     if (isString(level) && isString(aliases[level])) {
       level = aliases[level];
     } else if (isError(level)) {
+      hasLevel = false;
       meta = message;
       message = level;
       level = 'error';
     } else if (!isString(level) || levels.indexOf(level) === -1) {
+      hasLevel = false;
       meta = message;
       message = level;
       level = this.getNormalizedLevel(level);
@@ -310,17 +315,22 @@ class Axe {
       message = level;
     } else if (!isBunyan && originalArgs.length >= 4 + modifier) {
       message = undefined;
-
       meta = {};
       const messages = [];
-      for (const arg of originalArgs) {
+      for (const arg of originalArgs.slice(
+        hasLevel && modifier === 0 ? 1 : 0
+      )) {
         if (isError(arg)) errors.push(arg);
-        else if (isString(arg)) messages.push(arg);
+        // pushes number, object, string, etc for formatting
+        else messages.push(arg);
       }
 
-      if (errors.length === 0 && messages.length > 0)
+      if (messages.length > 0) {
         message = format(...messages);
-      else if (errors.length > 0 && level === 'log') level = 'error';
+        hasMessage = true;
+      }
+
+      if (errors.length > 0 && level === 'log') level = 'error';
     } else if (
       !isBunyan &&
       originalArgs.length === 3 + modifier &&
@@ -349,11 +359,25 @@ class Axe {
     } else if (isError(meta)) {
       errors.push(meta);
       // handle additional args
+      const messages = [];
+      if (isError(message)) {
+        errors.unshift(message);
+        message = undefined;
+      }
+
       for (const arg of originalArgs.slice(2 + modifier)) {
         // should skip this better with slice and modifier adjustment
         if (meta === arg) continue;
         if (isError(arg)) errors.push(arg);
+        else messages.push(arg);
+
+        if (messages.length > 0) {
+          message = format(...messages);
+          hasMessage = true;
+        }
       }
+
+      if (level === 'log') level = 'error';
 
       meta = {};
     }
@@ -562,14 +586,16 @@ class Axe {
       // Show stack trace if necessary (along with any metadata)
       if (isError(err) && this.config.showStack) {
         if (!this.config.meta.show || isEmpty(meta)) {
-          this.config.logger[method](err);
+          this.config.logger[method](...(hasMessage ? [message, err] : [err]));
         } else if (
           this.config.meta.hideMeta &&
           meta[this.config.meta.hideMeta]
         ) {
-          this.config.logger[method](err);
+          this.config.logger[method](...(hasMessage ? [message, err] : [err]));
         } else {
-          this.config.logger[method](err, meta);
+          this.config.logger[method](
+            ...(hasMessage ? [message, err, meta] : [err, meta])
+          );
         }
       } else if (!this.config.meta.show || isEmpty(meta)) {
         this.config.logger[method](message);
