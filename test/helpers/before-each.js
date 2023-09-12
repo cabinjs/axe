@@ -17,7 +17,7 @@ module.exports = function (logger) {
         pre: [
           function (level, err, message, meta) {
             if (message)
-              message = message.replace(
+              message = message.replaceAll(
                 /prehookconfig/gi,
                 `${level}prehookconfig`
               );
@@ -44,7 +44,10 @@ module.exports = function (logger) {
     ].filter((level) => t.context.axe.config.logger[level])) {
       t.context.axe.pre(level, function (err, message, meta) {
         if (message)
-          message = message.replace(/prehookadded/gi, `${level}prehookadded`);
+          message = message.replaceAll(
+            /prehookadded/gi,
+            `${level}prehookadded`
+          );
         return [err, message, meta];
       });
       t.context.axe.post(level, function (err, message, meta) {
