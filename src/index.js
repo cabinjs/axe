@@ -56,10 +56,10 @@ function dotifyToArray(obj) {
         : key;
       const newKey = current ? current + '.' + convertedKey : convertedKey; // joined key with dot
       // if (value && typeof value === 'object' && !(value instanceof Date) && !ObjectID.isValid(value)) {
-      if (isPlainObject(value)) {
+      if (isPlainObject(value) && res.indexOf(convertedKey) === -1) {
         res.push(convertedKey);
         recurse(value, newKey); // it's a nested object, so do it again
-      } else {
+      } else if (res.indexOf(newKey) === -1) {
         res.push(newKey);
       }
     }

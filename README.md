@@ -322,7 +322,7 @@ Axe will automatically add the following metadata and information to the `meta` 
 
 Axe will omit from metadata all properties via the default Array from `meta.omittedFields` option (see [Options](#options) below for more insight).
 
-If the argument "meta" is an empty object, then it will not be passed as an argument to logger methods \*ndash; because you don't want to see an empty `{}` polluting your log metadata. Axe keeps your log output tidy.
+If the argument "meta" is an empty object, then it will not be passed as an argument to logger methods – because you don't want to see an empty `{}` polluting your log metadata. Axe keeps your log output tidy.
 
 ```sh
 hello world {
