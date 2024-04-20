@@ -99,6 +99,10 @@ function isFunction(value) {
   return typeof value === 'function';
 }
 
+function getFunction(value) {
+  return isFunction(value) ? value : null;
+}
+
 class Axe {
   // eslint-disable-next-line complexity
   constructor(config = {}) {
@@ -182,16 +186,21 @@ class Axe {
     // Bind helper functions for each log level
     for (const element of levels) {
       // Ensure function exists in logger passed
-      if (typeof this.config.logger[element] !== 'function') {
-        if (element === 'fatal') {
-          this.config.logger.fatal =
-            this.config.logger.error ||
-            this.config.logger.info ||
-            this.config.logger.log;
-        } else {
-          this.config.logger[element] =
-            this.config.logger.info || this.config.logger.log;
-        }
+      if (element === 'fatal') {
+        this.config.logger.fatal =
+          getFunction(this.config.logger[element]) ||
+          getFunction(this.config.logger.error) ||
+          getFunction(this.config.logger.info) ||
+          getFunction(this.config.logger.log);
+      } else {
+        this.config.logger[element] =
+          getFunction(this.config.logger[element]) ||
+          getFunction(this.config.logger.info) ||
+          getFunction(this.config.logger.log);
+      }
+
+      if (!isFunction(this.config.logger[element])) {
+        throw new Error(`\`${element}\` must be a function on the logger.`);
       }
 
       // Bind log handler which normalizes args and populates meta
