@@ -69,7 +69,8 @@
   },
   "files": [
     "lib",
-    "dist"
+    "dist",
+    "src"
   ],
   "homepage": "https://github.com/cabinjs/axe",
   "jsdelivr": "dist/axe.min.js",
