@@ -61,6 +61,7 @@
     "signale": "^1.4.0",
     "sinon": "^15.2.0",
     "tinyify": "3.0.0",
+    "tsd": "^0.31.0",
     "xo": "^0.56.0"
   },
   "engines": {
@@ -120,7 +121,7 @@
     "build": "npm run build:clean && npm run build:lib && npm run build:dist",
     "build:clean": "rimraf lib dist",
     "build:dist": "npm run browserify && npm run minify",
-    "build:lib": "babel --config-file ./.lib.babelrc.json src --out-dir lib",
+    "build:lib": "babel --config-file ./.lib.babelrc.json src --out-dir lib --copy-files",
     "lint": "xo --fix && remark . -qfo && fixpack",
     "lint-build": "npm run lint-lib && npm run lint-dist",
     "lint-dist": "eslint --no-inline-config -c .dist.eslintrc.json dist",
@@ -129,7 +130,8 @@
     "nyc": "cross-env NODE_ENV=test nyc ava",
     "prepare": "husky install",
     "pretest": "npm run lint",
-    "test": "npm run build && npm run lint-build && npm run nyc"
+    "test": "npm run build && npm run lint-build && tsd && npm run nyc"
   },
+  "types": "lib/index.d.ts",
   "unpkg": "dist/axe.min.js"
 }
