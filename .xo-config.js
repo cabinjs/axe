@@ -7,7 +7,8 @@ module.exports = {
   rules: {
     'n/prefer-global/process': 'off',
     'prefer-object-spread': 'off',
-    'unicorn/prefer-includes': 'off'
+    'unicorn/prefer-includes': 'off',
+    'logical-assignment-operators': 'off'
   },
   overrides: [
     {
