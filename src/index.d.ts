@@ -47,7 +47,7 @@ declare namespace Axe {
     post(level: string, fn: PostHook): void;
   };
 
-  type Logger<
+  export type Logger<
     ObjectType = {
       info?: (...args: any[]) => any;
       log?: (...args: any[]) => any;
