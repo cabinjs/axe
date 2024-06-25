@@ -531,7 +531,7 @@ This package requires Promise support, therefore you will need to polyfill if yo
 **The browser-ready bundle is only 18 KB when minified and 6 KB when gzipped**.
 
 ```html
-<script src="https://polyfill.io/v3/polyfill.min.js?features=Promise"></script>
+<script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=Promise"></script>
 <script src="https://unpkg.com/axe"></script>
 <script type="text/javascript">
   (function () {
@@ -548,10 +548,10 @@ This package requires Promise support, therefore you will need to polyfill if yo
 
 #### Required Browser Features
 
-We recommend using <https://polyfill.io> (specifically with the bundle mentioned in [VanillaJS](#vanillajs) above):
+We recommend using <https://cdnjs.cloudflare.com/polyfill> (specifically with the bundle mentioned in [VanillaJS](#vanillajs) above):
 
 ```html
-<script src="https://polyfill.io/v3/polyfill.min.js?features=Promise"></script>
+<script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=Promise"></script>
 ```
 
 * Promise is not supported in op\_mini all
