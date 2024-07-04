@@ -49,6 +49,11 @@ function isPlainObject(value) {
 function dotifyToArray(obj) {
   const res = [];
   function recurse(obj, current) {
+    // if it's a buffer, uint8array, or array
+    // eslint-disable-next-line n/prefer-global/buffer
+    if (Buffer.isBuffer(obj) || obj instanceof Uint8Array || Array.isArray(obj))
+      return;
+
     for (const key of Reflect.ownKeys(obj)) {
       const value = obj[key];
       const convertedKey = isSymbol(key)
