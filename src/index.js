@@ -8,6 +8,7 @@ const formatSpecifiers = require('format-specifiers');
 const get = require('@strikeentco/get');
 const isError = require('iserror');
 const isSymbol = require('is-symbol');
+const isBuffer = require('is-buffer');
 const mergeOptions = require('merge-options');
 const pMapSeries = require('p-map-series');
 const parseAppInfo = require('parse-app-info');
@@ -50,8 +51,11 @@ function dotifyToArray(obj) {
   const res = [];
   function recurse(obj, current) {
     // if it's a buffer, uint8array, or array
-    // eslint-disable-next-line n/prefer-global/buffer
-    if (Buffer.isBuffer(obj) || obj instanceof Uint8Array || Array.isArray(obj))
+    if (
+      isBuffer(obj) ||
+      (obj.constructor && obj.constructor.name === 'Uint8Array') ||
+      Array.isArray(obj)
+    )
       return;
 
     for (const key of Reflect.ownKeys(obj)) {
