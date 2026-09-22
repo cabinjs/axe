@@ -353,6 +353,7 @@ class Axe {
       !isBunyan &&
       originalArgs.length === 3 + modifier &&
       isString(message) &&
+      !(meta && meta.is_http) &&
       formatSpecifiers.some((t) => message.indexOf(t) !== -1)
     ) {
       // Otherwise if there are three args and if the `message` contains

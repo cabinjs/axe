@@ -27,7 +27,8 @@
     "no-undef": "off",
     "no-prototype-builtins": "off",
     "no-unsafe-finally": "off",
-    "no-inner-declarations": "off"
+    "no-inner-declarations": "off",
+    "no-obj-calls": "off"
   },
   "globals": {
   },

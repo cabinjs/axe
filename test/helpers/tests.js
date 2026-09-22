@@ -100,6 +100,16 @@ module.exports = (test, logger = console) => {
       t.true(t.context[map[level]].calledWith(message));
     });
 
+    test(`${name} level ${level} preserves literal format tokens in HTTP logs`, (t) => {
+      const message = 'GET /ko/%s?value=%j HTTP/2.0 500';
+      const meta = {
+        is_http: true,
+        request: { url: '/ko/%s?value=%j' }
+      };
+      t.context.axe[level](message, meta);
+      t.true(t.context[map[level]].calledWith(message));
+    });
+
     test(`${name} level ${level} works with undefined message`, (t) => {
       t.context.axe[level]();
       t.true(
