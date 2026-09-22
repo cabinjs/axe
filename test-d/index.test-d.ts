@@ -1,5 +1,5 @@
 import { expectType, expectNotType } from 'tsd';
-import Axe from '../lib';
+import Axe from '../lib/index.js';
 
 const logger = new Axe({});
 

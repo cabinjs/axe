@@ -53,6 +53,21 @@ module.exports = (test, logger = console) => {
     ]);
   });
 
+  test(`${name} runs post hooks serially`, async (t) => {
+    const calls = [];
+    t.context.axe.config.hooks.post = [
+      async () => {
+        calls.push('first:start');
+        await Promise.resolve();
+        calls.push('first:end');
+      },
+      () => calls.push('second')
+    ];
+
+    await t.context.axe.info('serial post hook test');
+    t.deepEqual(calls, ['first:start', 'first:end', 'second']);
+  });
+
   for (const level of levels) {
     test(`${name} level ${level} works`, (t) => {
       t.context.axe[level](`test ${level} message`);

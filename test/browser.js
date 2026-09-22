@@ -18,11 +18,11 @@ const dom = new JSDOM(``, {
   contentType: 'text/html',
   includeNodeLocations: true,
   resources: 'usable',
-  runScripts: 'dangerously',
+  runScripts: 'outside-only',
   virtualConsole
 });
 
-dom.runVMScript(script);
+script.runInContext(dom.getInternalVMContext());
 
 test('should create a new Axe instance', (t) => {
   const axe = new dom.window.Axe();

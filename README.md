@@ -648,7 +648,7 @@ Pre hooks allow you to manipulate the arguments `err`, `message`, and `meta` tha
 
 Post hooks are useful if you want to send logging information to a third-party, store them into a database, or do any sort of custom processing.
 
-As of v12, logger invocation (e.g. `logger.info('hello')`) will return their post hooks as a Promise – which means you can `await logger.error(err);` if needed – which is useful if you have jobs that need to store logs to a database using post hooks before the job shuts down with `process.exit(0)`.  Note that the resolved Promise returns an Array of the returned values from post hooks, executed serially via `p-map-series`.  If no post hooks exist, then logger invocations will return an Object consisting of `{ method, err, message, meta }`, whereas `method` is the logger method invoked with (e.g. `logger.error()` will have a `method: 'error'` value).
+As of v12, logger invocation (e.g. `logger.info('hello')`) will return their post hooks as a Promise – which means you can `await logger.error(err);` if needed – which is useful if you have jobs that need to store logs to a database using post hooks before the job shuts down with `process.exit(0)`.  Note that the resolved Promise returns an Array of the returned values from post hooks, executed serially.  If no post hooks exist, then logger invocations will return an Object consisting of `{ method, err, message, meta }`, whereas `method` is the logger method invoked with (e.g. `logger.error()` will have a `method: 'error'` value).
 
 You should properly handle any errors in your pre hooks, otherwise they will be thrown and logger methods will not be invoked.
 

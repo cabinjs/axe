@@ -10,7 +10,6 @@ const isError = require('iserror');
 const isSymbol = require('is-symbol');
 const isBuffer = require('is-buffer');
 const mergeOptions = require('merge-options');
-const pMapSeries = require('p-map-series');
 const parseAppInfo = require('parse-app-info');
 const parseErr = require('parse-err');
 const pickDeep = require('pick-deep');
@@ -28,6 +27,26 @@ const name =
   process.env.NODE_ENV === 'development'
     ? false
     : process.env.HOSTNAME || os.hostname();
+
+async function mapSeries(iterable, mapper) {
+  const values = [...iterable];
+  const results = [];
+  async function map(index) {
+    if (index === values.length) return results;
+    results.push(await mapper(values[index]));
+    return map(index + 1);
+  }
+
+  return map(0);
+}
+
+async function runPostHooks({ hooks, method, err, message, meta, logger }) {
+  try {
+    return await mapSeries(hooks, (hook) => hook(method, err, message, meta));
+  } catch (err_) {
+    logger.error(err_);
+  }
+}
 
 // <https://github.com/sindresorhus/is-plain-obj/blob/main/index.js>
 function isPlainObject(value) {
@@ -631,13 +650,14 @@ class Axe {
     // post-hooks
     if (this.config.hooks.post.length === 0)
       return { method, err, message, meta };
-    return pMapSeries(this.config.hooks.post, (hook) =>
-      hook(method, err, message, meta)
-    )
-      .then()
-      .catch((err) => {
-        this.config.logger.error(err);
-      });
+    return runPostHooks({
+      hooks: this.config.hooks.post,
+      method,
+      err,
+      message,
+      meta,
+      logger: this.config.logger
+    });
   }
 }
 
